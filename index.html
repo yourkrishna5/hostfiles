@@ -101,6 +101,39 @@
         .fab-btn:active {
             transform: scale(0.9);
         }
+        
+        /* Toggle Switch */
+        .toggle-checkbox:checked {
+            right: 0;
+            border-color: #6366f1;
+        }
+        .toggle-checkbox:checked + .toggle-label {
+            background-color: #6366f1;
+        }
+
+        /* Toast Notification */
+        #toast {
+            visibility: hidden;
+            min-width: 250px;
+            background-color: #333;
+            color: #fff;
+            text-align: center;
+            border-radius: 8px;
+            padding: 16px;
+            position: fixed;
+            z-index: 1000;
+            left: 50%;
+            bottom: 30px;
+            transform: translateX(-50%);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            opacity: 0;
+            transition: opacity 0.3s, bottom 0.3s;
+        }
+        #toast.show {
+            visibility: visible;
+            opacity: 1;
+            bottom: 50px;
+        }
 
         /* Custom Scrollbar */
         ::-webkit-scrollbar { width: 6px; }
@@ -109,6 +142,8 @@
     </style>
 </head>
 <body class="min-h-screen flex flex-col antialiased selection:bg-brand-500 selection:text-white">
+
+    <div id="toast">Link copied to clipboard!</div>
 
     <div id="actionModal" class="fixed inset-0 z-[100] hidden flex items-center justify-center bg-black/80 backdrop-blur-sm transition-opacity duration-300">
         <div class="glass-panel p-8 rounded-2xl max-w-sm w-full mx-4 text-center transform transition-all scale-100 shadow-2xl shadow-brand-500/20 relative">
@@ -131,33 +166,22 @@
                 
                 <div class="pt-4 border-t border-gray-200/60">
                     <p class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">Rate our Service</p>
-                    
                     <div id="starContainer" class="flex justify-center gap-2" onmouseleave="resetStars()">
-                        <button onclick="submitRating(1)" onmouseenter="highlightStars(1)" class="star-btn transition transform hover:scale-125 focus:outline-none">
-                            <i class="fa-regular fa-star text-2xl text-gray-300 transition-colors duration-200"></i>
-                        </button>
-                        <button onclick="submitRating(2)" onmouseenter="highlightStars(2)" class="star-btn transition transform hover:scale-125 focus:outline-none">
-                            <i class="fa-regular fa-star text-2xl text-gray-300 transition-colors duration-200"></i>
-                        </button>
-                        <button onclick="submitRating(3)" onmouseenter="highlightStars(3)" class="star-btn transition transform hover:scale-125 focus:outline-none">
-                            <i class="fa-regular fa-star text-2xl text-gray-300 transition-colors duration-200"></i>
-                        </button>
-                        <button onclick="submitRating(4)" onmouseenter="highlightStars(4)" class="star-btn transition transform hover:scale-125 focus:outline-none">
-                            <i class="fa-regular fa-star text-2xl text-gray-300 transition-colors duration-200"></i>
-                        </button>
-                        <button onclick="submitRating(5)" onmouseenter="highlightStars(5)" class="star-btn transition transform hover:scale-125 focus:outline-none">
-                            <i class="fa-regular fa-star text-2xl text-gray-300 transition-colors duration-200"></i>
-                        </button>
+                        <button onclick="submitRating(1)" onmouseenter="highlightStars(1)" class="star-btn transition transform hover:scale-125 focus:outline-none"><i class="fa-regular fa-star text-2xl text-gray-300"></i></button>
+                        <button onclick="submitRating(2)" onmouseenter="highlightStars(2)" class="star-btn transition transform hover:scale-125 focus:outline-none"><i class="fa-regular fa-star text-2xl text-gray-300"></i></button>
+                        <button onclick="submitRating(3)" onmouseenter="highlightStars(3)" class="star-btn transition transform hover:scale-125 focus:outline-none"><i class="fa-regular fa-star text-2xl text-gray-300"></i></button>
+                        <button onclick="submitRating(4)" onmouseenter="highlightStars(4)" class="star-btn transition transform hover:scale-125 focus:outline-none"><i class="fa-regular fa-star text-2xl text-gray-300"></i></button>
+                        <button onclick="submitRating(5)" onmouseenter="highlightStars(5)" class="star-btn transition transform hover:scale-125 focus:outline-none"><i class="fa-regular fa-star text-2xl text-gray-300"></i></button>
                     </div>
                     <p id="ratingMessage" class="text-xs text-brand-600 font-bold h-4 mt-2 opacity-0 transition-opacity duration-300">Thanks for rating!</p>
                 </div>
-                </div>
+            </div>
         </div>
     </div>
 
     <nav class="sticky top-0 z-50 nav-glass">
         <div class="max-w-4xl mx-auto px-6 py-4 flex justify-between items-center">
-            <div class="flex items-center gap-3">
+            <div onclick="window.location.href=window.location.origin + window.location.pathname" class="flex items-center gap-3 cursor-pointer">
                 <div class="w-9 h-9 rounded-lg bg-gradient-to-tr from-brand-600 to-purple-500 flex items-center justify-center text-white shadow-lg shadow-brand-500/20">
                     <i class="fa-solid fa-share-nodes"></i>
                 </div>
@@ -181,7 +205,7 @@
                 <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
                     <i class="fa-solid fa-magnifying-glass text-gray-400 group-focus-within:text-brand-400 transition-colors"></i>
                 </div>
-                <input type="text" id="searchInput" onkeyup="filterFiles()" placeholder="Search files by name..." 
+                <input type="text" id="searchInput" onkeyup="filterFiles()" placeholder="Search files..." 
                     class="block w-full pl-11 pr-4 py-3 rounded-xl glass-dark text-white placeholder-gray-400 border border-white/10 focus:border-brand-500/50 focus:ring-2 focus:ring-brand-500/20 outline-none transition-all">
             </div>
 
@@ -209,7 +233,7 @@
                             <i class="fa-solid fa-cloud-arrow-up text-3xl"></i>
                         </div>
                         <h2 class="text-2xl font-bold text-gray-800">Upload New File</h2>
-                        <p class="text-gray-500 text-sm mt-1">Encrypted & Password Protected</p>
+                        <p class="text-gray-500 text-sm mt-1">Share content securely</p>
                     </div>
 
                     <div class="space-y-5">
@@ -230,12 +254,23 @@
                             </label>
                         </div>
 
-                        <div>
-                            <label class="block text-xs font-bold text-gray-500 uppercase mb-1.5 ml-1">Set Password</label>
-                            <input type="password" id="password" placeholder="Create a password" 
-                                class="w-full px-4 py-3.5 rounded-xl bg-gray-50 border-2 border-gray-100 focus:border-brand-500 focus:bg-white outline-none transition font-medium text-gray-700">
+                        <div class="bg-gray-50 rounded-xl p-4 border border-gray-100">
+                            <div class="flex items-center justify-between">
+                                <div class="flex flex-col">
+                                    <span class="text-sm font-bold text-gray-700">Password Protection</span>
+                                    <span class="text-xs text-gray-400">Optional security layer</span>
+                                </div>
+                                <label class="relative inline-flex items-center cursor-pointer">
+                                    <input type="checkbox" id="passwordToggle" value="" class="sr-only peer" onchange="togglePasswordInput()">
+                                    <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-brand-600"></div>
+                                </label>
+                            </div>
+                            
+                            <div id="passwordInputContainer" class="hidden mt-3 transition-all">
+                                <input type="password" id="password" placeholder="Create a password" 
+                                    class="w-full px-4 py-3 rounded-lg bg-white border border-gray-200 focus:border-brand-500 outline-none transition text-sm">
+                            </div>
                         </div>
-
                         <button id="uploadBtn" class="w-full py-4 mt-2 bg-gradient-to-r from-brand-600 to-indigo-600 hover:from-brand-700 hover:to-indigo-700 text-white font-bold text-lg rounded-xl shadow-lg shadow-brand-500/30 transform transition-all active:scale-[0.98]">
                             Upload
                         </button>
@@ -293,9 +328,11 @@
         const uploadPreset = "fbpost"; 
 
         document.getElementById("uploadBtn").addEventListener("click", upload);
+        
+        // Initial Fetch
         fetchFeed();
 
-        // Utility to format bytes to readable size
+        // Utility to format bytes
         function formatBytes(bytes, decimals = 2) {
             if (bytes === 0) return '0 Bytes';
             const k = 1024;
@@ -303,6 +340,37 @@
             const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
             const i = Math.floor(Math.log(bytes) / Math.log(k));
             return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
+        }
+
+        // Toggle Password Input Visibility
+        window.togglePasswordInput = function() {
+            const isChecked = document.getElementById('passwordToggle').checked;
+            const container = document.getElementById('passwordInputContainer');
+            if(isChecked) {
+                container.classList.remove('hidden');
+                document.getElementById('password').focus();
+            } else {
+                container.classList.add('hidden');
+                document.getElementById('password').value = ""; // Clear it
+            }
+        }
+
+        // Copy Share Link
+        window.shareLink = function(uuid) {
+            const url = `${window.location.origin}${window.location.pathname}?ref=${uuid}`;
+            navigator.clipboard.writeText(url).then(() => {
+                showToast("Link copied to clipboard!");
+            }).catch(err => {
+                console.error('Failed to copy: ', err);
+                showToast("Failed to copy link.");
+            });
+        }
+
+        function showToast(message) {
+            const x = document.getElementById("toast");
+            x.innerText = message;
+            x.className = "show";
+            setTimeout(function(){ x.className = x.className.replace("show", ""); }, 3000);
         }
 
         // ----- View Toggle Logic -----
@@ -352,6 +420,10 @@
 
         // ----- Confirm Add File -----
         window.confirmAddFile = function() {
+            // Reset fields
+            document.getElementById('passwordToggle').checked = false;
+            window.togglePasswordInput();
+            
             if(confirm("Do you want to add a new file?")) {
                 toggleView('upload');
             }
@@ -370,17 +442,27 @@
             const originalText = btn.innerHTML;
             
             const fileInput = document.getElementById("file").files[0];
-            const password = document.getElementById("password").value.trim();
             const filename = document.getElementById("filename").value.trim();
             
+            // Password logic
+            const usePassword = document.getElementById('passwordToggle').checked;
+            let password = null;
+            if(usePassword) {
+                password = document.getElementById("password").value.trim();
+                if(!password) {
+                    alert("⚠️ Please enter a password or disable protection.");
+                    return;
+                }
+            }
+            
+            if (!fileInput || !filename) {
+                alert("⚠️ Please select a file and enter a title.");
+                return;
+            }
+
             const progressContainer = document.getElementById("progressContainer");
             const progressBar = document.getElementById("progressBar");
             const progressText = document.getElementById("progressText");
-
-            if (!fileInput || !password || !filename) {
-                alert("⚠️ Please fill all fields");
-                return;
-            }
 
             // Capture Metadata for DB
             const originalName = fileInput.name;
@@ -391,7 +473,6 @@
             btn.disabled = true;
             btn.classList.add('opacity-70', 'cursor-not-allowed');
             
-            // Show Progress Bar
             progressContainer.classList.remove("hidden");
             progressBar.style.width = "0%";
             progressText.innerText = "0%";
@@ -417,15 +498,19 @@
                     try {
                         const cloudData = JSON.parse(xhr.responseText);
                         
-                        // Save to Supabase including new columns
+                        // Generate a UUID for sharing
+                        const shareUrlUUID = crypto.randomUUID();
+
+                        // Save to Supabase
                         const { error } = await supabase.from('posts').insert([{
-                            title: filename + "_" + password,
-                            filename, // This is your custom title input
-                            password,
+                            title: filename + (password ? "_" + password : ""),
+                            filename,
+                            password: password, // Can be null now
                             file_url: cloudData.secure_url,
                             views: 0,
-                            original_name: originalName, // Saved original filename
-                            file_size: fileSizeFormatted  // Saved formatted size
+                            original_name: originalName, 
+                            file_size: fileSizeFormatted,
+                            shareable_url: shareUrlUUID
                         }]);
 
                         if (error) throw error;
@@ -470,6 +555,10 @@
             const loader = document.getElementById("loader");
             const feed = document.getElementById("feed");
             
+            // Check for URL parameters for deep linking
+            const urlParams = new URLSearchParams(window.location.search);
+            const refId = urlParams.get('ref');
+
             if(feed.children.length === 0) loader.style.display = "block";
 
             const { data, error } = await supabase.from('posts')
@@ -496,7 +585,19 @@
                 return;
             }
 
-            data.forEach(post => {
+            // If deep link, filter data
+            let displayData = data;
+            if (refId) {
+                const target = data.find(p => p.shareable_url === refId);
+                if(target) {
+                    displayData = [target]; // Only show the shared file
+                    // Clear the URL param without refreshing so they can see other files later
+                    window.history.replaceState({}, document.title, window.location.pathname);
+                    showToast("Found shared file!");
+                }
+            }
+
+            displayData.forEach(post => {
                 const age = new Date() - new Date(post.upload_time);
                 const expired = age > 48*60*60*1000;
 
@@ -512,41 +613,52 @@
                 else if(fn.match(/\.(doc|docx)$/)) { iconClass = "fa-file-word text-blue-500"; bgClass = "bg-blue-50"; }
                 else if(fn.match(/\.(zip|rar|7z)$/)) { iconClass = "fa-file-zipper text-orange-500"; bgClass = "bg-orange-50"; }
 
+                const isProtected = post.password && post.password !== "null" && post.password !== "";
+
                 const div = document.createElement("div");
                 div.className = `feed-item glass-panel p-4 sm:p-5 rounded-2xl transition-all duration-300 ${expired ? 'opacity-60 grayscale' : 'hover:scale-[1.01] hover:shadow-xl'}`;
 
+                // Fix for title: line-clamp-2 handles wrapping, break-words handles long words
                 div.innerHTML = `
-                    <div class="flex items-center gap-4">
+                    <div class="flex items-center gap-3 sm:gap-4">
                         <div class="w-12 h-12 rounded-xl ${bgClass} flex items-center justify-center shrink-0 shadow-sm">
                             <i class="fa-regular ${iconClass} text-2xl"></i>
                         </div>
                         
-                        <div class="flex-grow min-w-0">
-                            <div class="flex justify-between items-start">
-                                <h3 class="font-bold text-gray-800 text-lg truncate pr-2">${post.filename}</h3>
-                                ${!expired ? `<span class="shrink-0 text-[10px] font-bold bg-green-100 text-green-700 px-2 py-1 rounded-full border border-green-200">ACTIVE</span>` : ''}
+                        <div class="flex-grow min-w-0 pr-2">
+                            <div class="flex flex-col sm:flex-row sm:justify-between sm:items-start">
+                                <h3 class="font-bold text-gray-800 text-base sm:text-lg line-clamp-2 break-words leading-tight">${post.filename}</h3>
+                                ${!expired ? `<span class="inline-block mt-1 sm:mt-0 w-fit shrink-0 text-[10px] font-bold bg-green-100 text-green-700 px-2 py-0.5 rounded-full border border-green-200">ACTIVE</span>` : ''}
                             </div>
                             
-                            <p class="orig-name text-[10px] text-gray-400 font-bold truncate mb-1 italic opacity-80">
+                            <p class="orig-name text-[10px] text-gray-400 font-bold truncate mt-1 italic opacity-80">
                                 <i class="fa-solid fa-paperclip mr-1"></i> ${post.original_name || 'unknown_file'}
                             </p>
 
-                            <div class="flex items-center gap-3 mt-1 text-xs text-gray-500 font-medium">
+                            <div class="flex flex-wrap items-center gap-2 sm:gap-3 mt-1.5 text-xs text-gray-500 font-medium">
                                 <span>${dateStr}</span>
-                                <span class="w-1 h-1 bg-gray-300 rounded-full"></span>
+                                <span class="hidden sm:inline w-1 h-1 bg-gray-300 rounded-full"></span>
                                 <span class="text-brand-600 font-bold">${post.file_size || '0 KB'}</span>
                                 <span class="w-1 h-1 bg-gray-300 rounded-full"></span>
                                 <span>${post.views} views</span>
+                                ${isProtected ? '<span class="ml-1 text-[10px] bg-gray-200 px-1.5 rounded text-gray-600"><i class="fa-solid fa-lock text-[8px]"></i></span>' : ''}
                                 ${expired ? `<span class="w-1 h-1 bg-gray-300 rounded-full"></span><span class="text-red-500">Expired</span>` : ''}
                             </div>
                         </div>
 
-                        <div class="shrink-0">
+                        <div class="shrink-0 flex flex-col gap-2">
                             ${expired 
                                 ? `<button disabled class="w-10 h-10 rounded-full bg-gray-100 text-gray-400 flex items-center justify-center cursor-not-allowed"><i class="fa-solid fa-ban"></i></button>`
-                                : `<button onclick="openFile('${post.password}','${post.file_url}', '${(post.original_name || post.filename).replace(/'/g, "\\'")}')" class="w-10 h-10 rounded-full bg-brand-50 text-brand-600 hover:bg-brand-600 hover:text-white flex items-center justify-center transition-colors shadow-sm border border-brand-100">
-                                    <i class="fa-solid fa-lock-open"></i>
-                                   </button>`
+                                : `
+                                <div class="flex flex-col gap-2">
+                                    <button onclick="shareLink('${post.shareable_url || ''}')" class="w-10 h-10 rounded-full bg-white text-gray-500 hover:text-brand-600 hover:shadow-md flex items-center justify-center transition border border-gray-100">
+                                        <i class="fa-solid fa-share-nodes"></i>
+                                    </button>
+                                    <button onclick="openFile('${post.password || ''}','${post.file_url}', '${(post.original_name || post.filename).replace(/'/g, "\\'")}')" class="w-10 h-10 rounded-full bg-brand-50 text-brand-600 hover:bg-brand-600 hover:text-white flex items-center justify-center transition-colors shadow-sm border border-brand-100">
+                                        <i class="fa-solid ${isProtected ? 'fa-lock' : 'fa-download'}"></i>
+                                   </button>
+                                </div>
+                                `
                             }
                         </div>
                     </div>
@@ -557,15 +669,22 @@
 
         // ----- Modal & Action Logic -----
         window.openFile = async function(passwordInput, fileUrl, fileName) {
-            const input = prompt("🔐 Enter file password:");
-            if (input !== passwordInput) {
-                alert("❌ Wrong password");
-                return;
+            
+            // Check if password exists and is not null/empty string
+            if (passwordInput && passwordInput !== 'null' && passwordInput !== '') {
+                const input = prompt("🔐 Enter file password:");
+                if (input !== passwordInput) {
+                    alert("❌ Wrong password");
+                    return;
+                }
             }
 
             try {
+                // Increment view count
                 const { data: posts } = await supabase.from('posts').select('views').eq('file_url', fileUrl).single();
-                await supabase.from('posts').update({ views: (posts.views || 0) + 1 }).eq('file_url', fileUrl);
+                if(posts) {
+                    await supabase.from('posts').update({ views: (posts.views || 0) + 1 }).eq('file_url', fileUrl);
+                }
                 
                 const modal = document.getElementById('actionModal');
                 const nameEl = document.getElementById('modalFileName');
@@ -585,7 +704,8 @@
 
             } catch (err) {
                 console.error(err);
-                alert("Error connecting to server");
+                // Even if view count fails, allow download
+                window.open(fileUrl, '_blank');
             }
         };
 
