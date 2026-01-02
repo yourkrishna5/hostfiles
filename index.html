@@ -3,14 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ShareWithCNR</title>
+    <title>ShareWithCNR - Email & File Service</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
     
     <script src="https://cdn.tailwindcss.com"></script>
     
@@ -23,15 +26,19 @@
                     },
                     colors: {
                         brand: {
-                            500: '#6366f1', // Indigo
+                            500: '#6366f1', 
                             600: '#4f46e5',
                             700: '#4338ca',
                         },
-                        dark: '#0f172a'
                     }
                 }
             }
         }
+        
+        // Initialize EmailJS
+        (function() {
+            emailjs.init("zr80LSG7-q1L2rnxr"); 
+        })();
     </script>
 
     <style>
@@ -47,16 +54,15 @@
             color: #f8fafc;
         }
 
-        /* Glass Panel */
+        /* Glass Panels */
         .glass-panel {
-            background: rgba(255, 255, 255, 0.9);
+            background: rgba(255, 255, 255, 0.95); /* Slightly more opaque for better contrast */
             backdrop-filter: blur(12px);
             -webkit-backdrop-filter: blur(12px);
             border: 1px solid rgba(255, 255, 255, 0.2);
-            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.1);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.15);
         }
         
-        /* Dark Glass for Search/Inputs */
         .glass-dark {
             background: rgba(15, 23, 42, 0.6);
             backdrop-filter: blur(16px);
@@ -64,7 +70,6 @@
             border: 1px solid rgba(255, 255, 255, 0.1);
         }
 
-        /* Stylish Nav Background */
         .nav-glass {
             background: rgba(15, 23, 42, 0.85); 
             backdrop-filter: blur(16px);
@@ -74,17 +79,8 @@
         }
 
         /* Page Transitions */
-        .hidden-page {
-            display: none;
-            opacity: 0;
-            transform: scale(0.95);
-        }
-        .active-page {
-            display: block;
-            opacity: 1;
-            transform: scale(1);
-            animation: fadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-        }
+        .hidden-page { display: none; opacity: 0; transform: scale(0.95); }
+        .active-page { display: block; opacity: 1; transform: scale(1); animation: fadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
 
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(10px) scale(0.98); }
@@ -94,25 +90,20 @@
         /* FAB Button Animation */
         .fab-btn {
             transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            /* Ensure it sits on top */
+            z-index: 9999; 
         }
         .fab-btn:hover {
             transform: translateY(-4px) scale(1.1);
-            box-shadow: 0 10px 25px rgba(99, 102, 241, 0.6);
+            box-shadow: 0 15px 30px rgba(79, 70, 229, 0.6); /* Strong glow */
         }
-        .fab-btn:active {
-            transform: scale(0.9);
-        }
+        .fab-btn:active { transform: scale(0.9); }
         
         /* Toggle Switch */
-        .toggle-checkbox:checked {
-            right: 0;
-            border-color: #6366f1;
-        }
-        .toggle-checkbox:checked + .toggle-label {
-            background-color: #6366f1;
-        }
+        .toggle-checkbox:checked { right: 0; border-color: #4f46e5; }
+        .toggle-checkbox:checked + .toggle-label { background-color: #4f46e5; }
 
-        /* Toast Notification */
+        /* Toast */
         #toast {
             visibility: hidden;
             min-width: 250px;
@@ -122,7 +113,7 @@
             border-radius: 8px;
             padding: 16px;
             position: fixed;
-            z-index: 1000;
+            z-index: 10000;
             left: 50%;
             bottom: 30px;
             transform: translateX(-50%);
@@ -130,44 +121,64 @@
             opacity: 0;
             transition: opacity 0.3s, bottom 0.3s;
         }
-        #toast.show {
-            visibility: visible;
-            opacity: 1;
-            bottom: 50px;
-        }
+        #toast.show { visibility: visible; opacity: 1; bottom: 80px; }
 
-        /* Custom Scrollbar */
-        ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: #6366f1; border-radius: 10px; }
-        
+        /* Custom Input */
         .custom-input {
             width: 100%;
             padding: 0.75rem 1rem;
             border-radius: 0.75rem;
             background-color: #f9fafb;
-            border: 2px solid #f3f4f6;
+            border: 2px solid #e5e7eb;
             outline: none;
             transition: all 0.2s;
             font-size: 0.875rem;
-            color: #374151;
+            color: #1f2937; /* Dark text */
         }
         .custom-input:focus {
             background-color: #fff;
             border-color: #6366f1;
+            box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
         }
 
-        /* QR Code Styling */
-        #qrcode img {
-            margin: 0 auto;
-            border: 8px solid white;
-            border-radius: 8px;
-        }
+        #qrcode img { margin: 0 auto; border: 8px solid white; border-radius: 8px; }
     </style>
 </head>
 <body class="min-h-screen flex flex-col antialiased selection:bg-brand-500 selection:text-white">
 
-    <div id="toast">Link copied! Share it with friends.</div>
+    <div id="toast">Notification</div>
+
+    <div id="choiceModal" class="fixed inset-0 z-[120] hidden flex items-center justify-center bg-black/80 backdrop-blur-sm transition-opacity duration-300">
+        <div class="glass-panel p-6 rounded-2xl max-w-sm w-full mx-4 text-center transform transition-all scale-100 shadow-2xl relative">
+            <button onclick="closeChoiceModal()" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition">
+                <i class="fa-solid fa-xmark text-xl"></i>
+            </button>
+            
+            <h3 class="text-xl font-bold text-gray-800 mb-6">Create New</h3>
+            
+            <div class="space-y-4">
+                <button onclick="selectUploadMode('feed')" class="w-full flex items-center gap-4 p-4 rounded-xl border border-gray-200 hover:border-blue-500 hover:bg-blue-50 transition group text-left bg-white">
+                    <div class="w-12 h-12 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-xl group-hover:scale-110 transition-transform">
+                        <i class="fa-solid fa-earth-americas"></i>
+                    </div>
+                    <div>
+                        <h4 class="font-bold text-gray-800">Public Feed</h4>
+                        <p class="text-xs text-gray-500">Share with everyone on the list</p>
+                    </div>
+                </button>
+
+                <button onclick="selectUploadMode('email')" class="w-full flex items-center gap-4 p-4 rounded-xl border border-gray-200 hover:border-purple-500 hover:bg-purple-50 transition group text-left bg-white">
+                    <div class="w-12 h-12 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center text-xl group-hover:scale-110 transition-transform">
+                        <i class="fa-solid fa-envelope-open-text"></i>
+                    </div>
+                    <div>
+                        <h4 class="font-bold text-gray-800">Send via Email</h4>
+                        <p class="text-xs text-gray-500">Private email with download link</p>
+                    </div>
+                </button>
+            </div>
+        </div>
+    </div>
 
     <div id="shareModal" class="fixed inset-0 z-[110] hidden flex items-center justify-center bg-black/80 backdrop-blur-sm transition-opacity duration-300">
         <div class="glass-panel p-6 rounded-2xl max-w-sm w-full mx-4 text-center transform transition-all scale-100 shadow-2xl shadow-brand-500/20 relative">
@@ -182,38 +193,35 @@
                 <div id="qrcode"></div>
             </div>
             
+            <button onclick="downloadQR()" class="mb-4 text-sm font-bold text-brand-600 hover:text-brand-700 hover:underline flex items-center justify-center w-full">
+                <i class="fa-solid fa-download mr-2"></i> Download QR Image
+            </button>
+
             <div class="space-y-4">
                 <div class="relative">
-                    <input type="text" id="shareInput" readonly class="custom-input pr-12 text-xs" value="...">
+                    <input type="text" id="shareInput" readonly class="custom-input pr-12 text-xs text-gray-600" value="...">
                     <button onclick="copyFromModal()" class="absolute right-2 top-1/2 -translate-y-1/2 text-brand-600 hover:text-brand-800 p-2">
                         <i class="fa-regular fa-copy text-lg"></i>
                     </button>
                 </div>
-                
-                <p class="text-xs text-gray-400">Scan QR code or copy link to share</p>
             </div>
         </div>
     </div>
 
     <div id="actionModal" class="fixed inset-0 z-[100] hidden flex items-center justify-center bg-black/80 backdrop-blur-sm transition-opacity duration-300">
         <div class="glass-panel p-8 rounded-2xl max-w-sm w-full mx-4 text-center transform transition-all scale-100 shadow-2xl shadow-brand-500/20 relative">
-            
             <button onclick="closeModal()" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition">
                 <i class="fa-solid fa-xmark text-xl"></i>
             </button>
-
             <div class="w-16 h-16 bg-brand-50 rounded-full flex items-center justify-center mx-auto mb-4 text-brand-600">
                 <i class="fa-solid fa-unlock-keyhole text-2xl"></i>
             </div>
-            
             <h3 class="text-xl font-bold text-gray-800 mb-1">Access Granted</h3>
             <p id="modalFileName" class="text-sm text-gray-500 font-medium mb-6 truncate px-2">filename.pdf</p>
-            
             <div class="space-y-6">
                 <a id="downloadLink" href="#" target="_blank" class="flex items-center justify-center gap-2 w-full py-3 bg-brand-600 hover:bg-brand-700 text-white rounded-xl font-semibold transition shadow-lg shadow-brand-500/30">
                     <i class="fa-solid fa-download"></i> Download File
                 </a>
-                
                 <div class="pt-4 border-t border-gray-200/60">
                     <p class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">Rate our Service</p>
                     <div id="starContainer" class="flex justify-center gap-2" onmouseleave="resetStars()">
@@ -277,53 +285,62 @@
                     <div class="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center mr-3 group-hover:bg-white/20 transition">
                         <i class="fa-solid fa-arrow-left text-sm"></i>
                     </div>
-                    <span class="font-medium">Back to Feed</span>
+                    <span class="font-medium">Cancel</span>
                 </button>
 
                 <div class="glass-panel rounded-2xl p-8 shadow-2xl">
                     <div class="text-center mb-8">
-                        <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-brand-50 text-brand-600 mb-4 shadow-inner">
+                        <div id="modeIcon" class="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-brand-50 text-brand-600 mb-4 shadow-inner">
                             <i class="fa-solid fa-cloud-arrow-up text-3xl"></i>
                         </div>
-                        <h2 class="text-2xl font-bold text-gray-800">Upload New File</h2>
-                        <p class="text-gray-500 text-sm mt-1">Share content securely</p>
+                        <h2 id="modeTitle" class="text-2xl font-bold text-gray-800">Upload New File</h2>
+                        <p id="modeDesc" class="text-gray-500 text-sm mt-1">Share content securely</p>
                     </div>
 
                     <div class="space-y-5">
-                        <div class="group">
-                            <label class="block text-xs font-bold text-gray-500 uppercase mb-1.5 ml-1">File Title <span class="text-red-400">*</span></label>
-                            <input type="text" id="filename" placeholder="e.g. Physics Notes" 
-                                class="custom-input focus:ring-2 focus:ring-brand-500/20">
-                        </div>
-
-                        <div class="group">
-                            <label class="block text-xs font-bold text-gray-500 uppercase mb-1.5 ml-1">Description <span class="text-gray-400 font-normal lowercase">(optional)</span></label>
-                            <textarea id="description" rows="2" placeholder="Add a short note..." 
-                                class="custom-input focus:ring-2 focus:ring-brand-500/20 resize-none"></textarea>
-                        </div>
-
-                        <div class="grid grid-cols-2 gap-4">
-                            <div>
-                                <label class="block text-xs font-bold text-gray-500 uppercase mb-1.5 ml-1">Sent By <span class="text-gray-400 font-normal lowercase">(optional)</span></label>
-                                <input type="text" id="sentBy" placeholder="Your Name" 
-                                    class="custom-input focus:ring-2 focus:ring-brand-500/20">
+                        <div id="emailFields" class="hidden space-y-5 border-b border-gray-200 pb-5 mb-5">
+                            <div class="group">
+                                <label class="block text-xs font-bold text-gray-500 uppercase mb-1.5 ml-1">Receiver's Email <span class="text-red-400">*</span></label>
+                                <input type="email" id="emailTo" placeholder="friend@example.com" class="custom-input focus:ring-2 focus:ring-purple-500/20">
                             </div>
-                            <div>
-                                <label class="block text-xs font-bold text-gray-500 uppercase mb-1.5 ml-1">Sent To <span class="text-gray-400 font-normal lowercase">(optional)</span></label>
-                                <input type="text" id="sentTo" placeholder="Receiver" 
-                                    class="custom-input focus:ring-2 focus:ring-brand-500/20">
+                            <div class="group">
+                                <label class="block text-xs font-bold text-gray-500 uppercase mb-1.5 ml-1">Your Name <span class="text-red-400">*</span></label>
+                                <input type="text" id="emailFromName" placeholder="e.g. John Doe" class="custom-input focus:ring-2 focus:ring-purple-500/20">
+                            </div>
+                            <div class="group">
+                                <label class="block text-xs font-bold text-gray-500 uppercase mb-1.5 ml-1">Message</label>
+                                <textarea id="emailMessage" rows="2" placeholder="Here are the files you asked for..." class="custom-input focus:ring-2 focus:ring-purple-500/20 resize-none"></textarea>
+                            </div>
+                        </div>
+
+                        <div id="feedFields" class="space-y-5">
+                            <div class="group">
+                                <label class="block text-xs font-bold text-gray-500 uppercase mb-1.5 ml-1">File Title <span class="text-red-400">*</span></label>
+                                <input type="text" id="filename" placeholder="e.g. Project Assets" class="custom-input focus:ring-2 focus:ring-brand-500/20">
+                            </div>
+                            <div class="group">
+                                <label class="block text-xs font-bold text-gray-500 uppercase mb-1.5 ml-1">Description <span class="text-gray-400 font-normal lowercase">(optional)</span></label>
+                                <textarea id="description" rows="2" placeholder="Add a short note..." class="custom-input focus:ring-2 focus:ring-brand-500/20 resize-none"></textarea>
+                            </div>
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-xs font-bold text-gray-500 uppercase mb-1.5 ml-1">Sent By</label>
+                                    <input type="text" id="sentBy" placeholder="Your Name" class="custom-input focus:ring-2 focus:ring-brand-500/20">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-bold text-gray-500 uppercase mb-1.5 ml-1">Sent To</label>
+                                    <input type="text" id="sentTo" placeholder="Receiver" class="custom-input focus:ring-2 focus:ring-brand-500/20">
+                                </div>
                             </div>
                         </div>
 
                         <div>
-                            <label class="block text-xs font-bold text-gray-500 uppercase mb-1.5 ml-1">Attachment <span class="text-red-400">*</span></label>
-                            
-                            <input type="file" id="file" class="hidden" accept="image/*,application/pdf,video/*,.doc,.docx,.zip,.rar" onchange="updateFileName(this)">
-                            
+                            <label class="block text-xs font-bold text-gray-500 uppercase mb-1.5 ml-1">Attachments <span class="text-red-400">*</span></label>
+                            <input type="file" id="file" class="hidden" multiple onchange="updateFileName(this)">
                             <label for="file" class="flex flex-col items-center justify-center w-full h-24 border-2 border-dashed border-gray-300 rounded-xl cursor-pointer hover:border-brand-500 hover:bg-brand-50/50 transition">
                                 <div class="flex flex-col items-center justify-center pt-2 pb-3">
                                     <i class="fa-solid fa-folder-open text-xl text-gray-400 mb-1"></i>
-                                    <p id="fileLabel" class="text-sm text-gray-500 font-medium">Click to choose file or Camera</p>
+                                    <p id="fileLabel" class="text-sm text-gray-500 font-medium text-center px-4">Click to choose files (Multiple allowed)</p>
                                 </div>
                             </label>
                         </div>
@@ -335,57 +352,51 @@
                                     <span class="text-xs text-gray-400">Optional security layer</span>
                                 </div>
                                 <label class="relative inline-flex items-center cursor-pointer">
-                                    <input type="checkbox" id="passwordToggle" value="" class="sr-only peer" onchange="togglePasswordInput()">
+                                    <input type="checkbox" id="passwordToggle" class="sr-only peer" onchange="togglePasswordInput()">
                                     <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-brand-600"></div>
                                 </label>
                             </div>
-                            
                             <div id="passwordInputContainer" class="hidden mt-3 transition-all">
-                                <input type="password" id="password" placeholder="Create a password" 
-                                    class="custom-input">
+                                <input type="password" id="password" placeholder="Create a password" class="custom-input">
                             </div>
                         </div>
+
                         <button id="uploadBtn" class="w-full py-4 mt-2 bg-gradient-to-r from-brand-600 to-indigo-600 hover:from-brand-700 hover:to-indigo-700 text-white font-bold text-lg rounded-xl shadow-lg shadow-brand-500/30 transform transition-all active:scale-[0.98]">
                             Upload
                         </button>
                         
                         <div id="progressContainer" class="hidden mt-4">
                             <div class="flex justify-between text-xs font-bold text-gray-500 mb-1">
-                                <span>Uploading...</span>
+                                <span>Processing...</span>
                                 <span id="progressText">0%</span>
                             </div>
                             <div class="w-full bg-gray-200 rounded-full h-2.5 overflow-hidden">
                                 <div id="progressBar" class="bg-brand-600 h-2.5 rounded-full transition-all duration-75" style="width: 0%"></div>
                             </div>
                         </div>
-
                     </div>
                 </div>
             </div>
         </div>
-
     </main>
 
-    <div id="fabContainer" class="fixed bottom-8 left-8 z-40">
-        <button onclick="confirmAddFile()" class="fab-btn w-14 h-14 rounded-full bg-gradient-to-tr from-brand-600 to-indigo-500 text-white flex items-center justify-center shadow-2xl border-2 border-white/20">
-            <i class="fa-solid fa-plus text-xl"></i>
+    <div id="fabContainer" class="fixed bottom-8 left-8 z-50">
+        <button onclick="openChoiceModal()" class="fab-btn w-16 h-16 rounded-full bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 text-white flex items-center justify-center shadow-[0_0_25px_rgba(99,102,241,0.6)] border-4 border-white/20">
+            <i class="fa-solid fa-plus text-2xl"></i>
         </button>
     </div>
 
     <footer class="glass-panel border-t border-gray-200 mt-auto relative z-20">
         <div class="max-w-4xl mx-auto px-6 py-8">
             <div class="flex flex-col md:flex-row justify-between items-center gap-6">
-                
                 <div class="text-center md:text-left">
                     <h3 class="font-bold text-lg text-gray-800">ShareWithCNR</h3>
                     <p class="text-xs text-gray-400 mt-1">&copy; 2025 CNR. All rights reserved.</p>
                 </div>
-
                 <div class="flex gap-3">
                     <a href="https://github.com/yourkrishna5" target="_blank" class="w-9 h-9 rounded-full bg-gray-100 flex items-center justify-center text-gray-600 hover:bg-black hover:text-white transition"><i class="fa-brands fa-github"></i></a>
                     <a href="https://www.iamcnr.netlify.app" target="_blank" class="w-9 h-9 rounded-full bg-gray-100 flex items-center justify-center text-gray-600 hover:bg-blue-600 hover:text-white transition"><i class="fa-solid fa-globe"></i></a>
                     <a href="https://instagram.com/beyondcnr" target="_blank" class="w-9 h-9 rounded-full bg-gray-100 flex items-center justify-center text-gray-600 hover:bg-pink-600 hover:text-white transition"><i class="fa-brands fa-instagram"></i></a>
-                    <a href="https://facebook.com/neocnrkm10" target="_blank" class="w-9 h-9 rounded-full bg-gray-100 flex items-center justify-center text-gray-600 hover:bg-blue-700 hover:text-white transition"><i class="fa-brands fa-facebook-f"></i></a>
                 </div>
             </div>
         </div>
@@ -400,30 +411,30 @@
         
         const cloudName = "du1wbgmmh";
         const uploadPreset = "fbpost"; 
+        
+        // EmailJS Params
+        const serviceID = "service_teqtpsl";
+        const templateID = "template_92vutzu";
 
-        document.getElementById("uploadBtn").addEventListener("click", upload);
+        let currentMode = 'feed';
+
+        document.getElementById("uploadBtn").addEventListener("click", handleUploadProcess);
         
         // --- INITIALIZATION ---
         const urlParams = new URLSearchParams(window.location.search);
         const refId = urlParams.get('ref');
 
-        if (refId) {
-            handleSharedLink(refId);
-        } else {
-            fetchFeed();
-        }
+        if (refId) { handleSharedLink(refId); } 
+        else { fetchFeed(); }
 
-        // Utility to format bytes
         function formatBytes(bytes, decimals = 2) {
             if (bytes === 0) return '0 Bytes';
             const k = 1024;
-            const dm = decimals < 0 ? 0 : decimals;
             const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
             const i = Math.floor(Math.log(bytes) / Math.log(k));
-            return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(decimals)) + ' ' + sizes[i];
         }
 
-        // Toggle Password Input Visibility
         window.togglePasswordInput = function() {
             const isChecked = document.getElementById('passwordToggle').checked;
             const container = document.getElementById('passwordInputContainer');
@@ -432,13 +443,47 @@
                 document.getElementById('password').focus();
             } else {
                 container.classList.add('hidden');
-                document.getElementById('password').value = ""; // Clear it
+                document.getElementById('password').value = "";
             }
         }
 
-        // ----------------------------------------------------
-        // UPDATED SHARE LOGIC (With QR Code)
-        // ----------------------------------------------------
+        // --- SELECTION MODAL ---
+        window.openChoiceModal = function() { document.getElementById('choiceModal').classList.remove('hidden'); }
+        window.closeChoiceModal = function() { document.getElementById('choiceModal').classList.add('hidden'); }
+
+        window.selectUploadMode = function(mode) {
+            currentMode = mode;
+            closeChoiceModal();
+            const btn = document.getElementById('uploadBtn');
+            const feedFields = document.getElementById('feedFields');
+            const emailFields = document.getElementById('emailFields');
+            const icon = document.getElementById('modeIcon');
+            const title = document.getElementById('modeTitle');
+            const desc = document.getElementById('modeDesc');
+
+            if(mode === 'email') {
+                feedFields.classList.add('hidden');
+                emailFields.classList.remove('hidden');
+                icon.className = "inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-purple-50 text-purple-600 mb-4 shadow-inner";
+                icon.innerHTML = '<i class="fa-solid fa-envelope-open-text text-3xl"></i>';
+                title.innerText = "Send via Email";
+                desc.innerText = "Files are secure and expire in 48h";
+                btn.innerText = "Send Email";
+                btn.className = "w-full py-4 mt-2 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white font-bold text-lg rounded-xl shadow-lg shadow-purple-500/30 transform transition-all active:scale-[0.98]";
+            } else {
+                feedFields.classList.remove('hidden');
+                emailFields.classList.add('hidden');
+                icon.className = "inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-brand-50 text-brand-600 mb-4 shadow-inner";
+                icon.innerHTML = '<i class="fa-solid fa-cloud-arrow-up text-3xl"></i>';
+                title.innerText = "Upload to Feed";
+                desc.innerText = "Share content securely with the public list";
+                btn.innerText = "Upload";
+                btn.className = "w-full py-4 mt-2 bg-gradient-to-r from-brand-600 to-indigo-600 hover:from-brand-700 hover:to-indigo-700 text-white font-bold text-lg rounded-xl shadow-lg shadow-brand-500/30 transform transition-all active:scale-[0.98]";
+            }
+            toggleView('upload');
+        }
+
+        // --- SHARE / QR LOGIC ---
         window.openShareModal = function(uuid) {
             const url = `${window.location.origin}${window.location.pathname}?ref=${uuid}`;
             const modal = document.getElementById('shareModal');
@@ -448,10 +493,7 @@
             modal.classList.remove('hidden');
             input.value = url;
             
-            // Clear previous QR Code
             qrContainer.innerHTML = "";
-            
-            // Generate New QR Code
             new QRCode(qrContainer, {
                 text: url,
                 width: 150,
@@ -462,23 +504,28 @@
             });
         }
 
-        window.closeShareModal = function() {
-            document.getElementById('shareModal').classList.add('hidden');
+        window.closeShareModal = function() { document.getElementById('shareModal').classList.add('hidden'); }
+
+        window.downloadQR = function() {
+            const qrImg = document.querySelector('#qrcode img');
+            if(qrImg && qrImg.src) {
+                const link = document.createElement('a');
+                link.href = qrImg.src;
+                link.download = 'sharewithcnr-qr.png';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            } else { showToast("QR Code not ready yet."); }
         }
 
         window.copyFromModal = function() {
             const input = document.getElementById('shareInput');
             input.select();
-            input.setSelectionRange(0, 99999); // For mobile devices
-            navigator.clipboard.writeText(input.value).then(() => {
-                showToast("Link copied!");
-            });
+            input.setSelectionRange(0, 99999);
+            navigator.clipboard.writeText(input.value).then(() => { showToast("Link copied!"); });
         }
 
-        document.getElementById('shareModal').addEventListener('click', function(e) {
-            if (e.target === this) closeShareModal();
-        });
-
+        document.getElementById('shareModal').addEventListener('click', function(e) { if (e.target === this) closeShareModal(); });
 
         function showToast(message) {
             const x = document.getElementById("toast");
@@ -487,7 +534,7 @@
             setTimeout(function(){ x.className = x.className.replace("show", ""); }, 3000);
         }
 
-        // ----- Shared Link Logic (Auto-Open) -----
+        // --- BACKEND LOGIC ---
         async function handleSharedLink(refId) {
             const loader = document.getElementById("loader");
             const feed = document.getElementById("feed");
@@ -498,20 +545,12 @@
             document.getElementById('feedSubtitle').innerText = "Someone shared this secure file with you.";
             document.getElementById('showAllBtn').classList.remove('hidden');
 
-            const { data, error } = await supabase
-                .from('posts')
-                .select('*')
-                .eq('shareable_url', refId)
-                .single();
+            const { data, error } = await supabase.from('posts').select('*').eq('shareable_url', refId).single();
 
             loader.style.display = "none";
 
             if (error || !data) {
-                feed.innerHTML = `<div class="bg-white/10 text-white p-4 rounded-xl text-center backdrop-blur-md">
-                    <i class="fa-solid fa-triangle-exclamation text-yellow-400 text-2xl mb-2"></i><br>
-                    Link is invalid or expired.<br>
-                    <button onclick="window.location.href=window.location.pathname" class="mt-2 underline text-brand-400">Go to Home</button>
-                </div>`;
+                feed.innerHTML = `<div class="bg-white/10 text-white p-4 rounded-xl text-center backdrop-blur-md">Link is invalid or expired.<br><button onclick="window.location.href=window.location.pathname" class="mt-2 underline text-brand-400">Go Home</button></div>`;
                 return;
             }
 
@@ -520,72 +559,44 @@
 
             setTimeout(() => {
                 const isProtected = data.password && data.password !== "null" && data.password !== "";
-                if(isProtected) {
-                    openFile(data.password, data.file_url, data.filename);
-                } else {
-                    openFile(null, data.file_url, data.filename);
-                }
+                if(isProtected) { openFile(data.password, data.file_url, data.filename); } 
+                else { openFile(null, data.file_url, data.filename); }
             }, 300);
         }
 
-        // ----- Standard Feed -----
         async function fetchFeed() {
             const loader = document.getElementById("loader");
             const feed = document.getElementById("feed");
-            
             if(feed.children.length === 0) loader.style.display = "block";
 
-            const { data, error } = await supabase.from('posts')
-                .select('*')
-                .order('views', { ascending:false })
-                .order('upload_time', { ascending:false });
+            const { data, error } = await supabase.from('posts').select('*').order('views', { ascending:false }).order('upload_time', { ascending:false });
             
             loader.style.display = "none";
-            
-            if (error) { 
-                feed.innerHTML = `<div class="bg-white/10 text-white p-4 rounded-xl text-center backdrop-blur-md">Failed to load feed.</div>`;
-                return; 
-            }
+            if (error) return; 
 
             feed.innerHTML = "";
-
             if (data.length === 0) {
-                feed.innerHTML = `
-                    <div class="glass-panel p-10 rounded-2xl text-center">
-                        <i class="fa-solid fa-box-open text-4xl text-gray-300 mb-4"></i>
-                        <p class="text-gray-500 font-medium">No files available yet.</p>
-                        <button onclick="confirmAddFile()" class="mt-4 text-brand-600 font-bold text-sm hover:underline">Upload First File</button>
-                    </div>`;
+                feed.innerHTML = `<div class="glass-panel p-10 rounded-2xl text-center"><p class="text-gray-500">No files available yet.</p><button onclick="openChoiceModal()" class="mt-4 text-brand-600 font-bold text-sm hover:underline">Upload First</button></div>`;
                 return;
             }
-
-            data.forEach(post => {
-                renderPostItem(post, feed);
-            });
+            data.forEach(post => { renderPostItem(post, feed); });
         }
 
-        // ----- Render a Single Card -----
         function renderPostItem(post, container) {
             const age = new Date() - new Date(post.upload_time);
             const expired = age > 48*60*60*1000;
-
-            const dateObj = new Date(post.upload_time);
-            const dateStr = dateObj.toLocaleDateString(undefined, { month:'short', day:'numeric' });
+            const dateStr = new Date(post.upload_time).toLocaleDateString(undefined, { month:'short', day:'numeric' });
             
-            let iconClass = "fa-file-lines text-gray-500";
-            let bgClass = "bg-gray-100";
+            let iconClass = "fa-file-lines text-gray-500", bgClass = "bg-gray-100";
             const fn = (post.original_name || "").toLowerCase();
             
             if(fn.includes('pdf')) { iconClass = "fa-file-pdf text-red-500"; bgClass = "bg-red-50"; }
             else if(fn.match(/\.(jpg|jpeg|png|webp)$/)) { iconClass = "fa-file-image text-purple-500"; bgClass = "bg-purple-50"; }
             else if(fn.match(/\.(doc|docx)$/)) { iconClass = "fa-file-word text-blue-500"; bgClass = "bg-blue-50"; }
-            else if(fn.match(/\.(zip|rar|7z)$/)) { iconClass = "fa-file-zipper text-orange-500"; bgClass = "bg-orange-50"; }
+            else if(fn.match(/\.(zip|rar|7z)$/) || post.filename.includes('bundle_archive')) { iconClass = "fa-file-zipper text-orange-500"; bgClass = "bg-orange-50"; }
 
             const isProtected = post.password && post.password !== "null" && post.password !== "";
-            const hasDesc = post.description && post.description.trim() !== "";
-            const hasSender = post.sent_by && post.sent_by.trim() !== "";
-            const hasReceiver = post.sent_to && post.sent_to.trim() !== "";
-
+            
             const div = document.createElement("div");
             div.className = `feed-item glass-panel p-4 sm:p-5 rounded-2xl transition-all duration-300 ${expired ? 'opacity-60 grayscale' : 'hover:scale-[1.01] hover:shadow-xl'}`;
 
@@ -594,59 +605,31 @@
                     <div class="w-12 h-12 rounded-xl ${bgClass} flex items-center justify-center shrink-0 shadow-sm mt-1">
                         <i class="fa-regular ${iconClass} text-2xl"></i>
                     </div>
-                    
                     <div class="flex-grow min-w-0 pr-1">
                         <div class="flex flex-col sm:flex-row sm:justify-between sm:items-start">
-                            <h3 class="font-bold text-gray-800 text-base sm:text-lg line-clamp-2 break-words leading-tight">${post.filename}</h3>
+                            <h3 class="font-bold text-gray-800 text-base sm:text-lg line-clamp-2">${post.filename}</h3>
                             ${!expired ? `<span class="inline-block mt-1 sm:mt-0 w-fit shrink-0 text-[10px] font-bold bg-green-100 text-green-700 px-2 py-0.5 rounded-full border border-green-200">ACTIVE</span>` : ''}
                         </div>
-                        
-                        <p class="orig-name text-[10px] text-gray-400 font-bold truncate mt-1 italic opacity-80">
-                            <i class="fa-solid fa-paperclip mr-1"></i> ${post.original_name || 'unknown_file'}
-                        </p>
-
-                        ${hasDesc ? `<p class="text-xs text-gray-600 mt-2 line-clamp-2 leading-relaxed bg-gray-50 p-2 rounded-lg border border-gray-100">${post.description}</p>` : ''}
-
-                        <div class="flex flex-wrap items-center gap-2 sm:gap-3 mt-3 text-xs text-gray-500 font-medium">
-                            <span>${dateStr}</span>
-                            <span class="w-1 h-1 bg-gray-300 rounded-full"></span>
-                            <span class="text-brand-600 font-bold">${post.file_size || '0 KB'}</span>
-                            <span class="w-1 h-1 bg-gray-300 rounded-full"></span>
+                        <p class="text-[10px] text-gray-400 font-bold truncate mt-1 italic opacity-80"><i class="fa-solid fa-paperclip mr-1"></i> ${post.original_name || 'unknown'}</p>
+                        ${post.description ? `<p class="text-xs text-gray-600 mt-2 line-clamp-2 bg-gray-50 p-2 rounded-lg border border-gray-100">${post.description}</p>` : ''}
+                        <div class="flex flex-wrap items-center gap-2 mt-3 text-xs text-gray-500 font-medium">
+                            <span>${dateStr}</span> <span class="w-1 h-1 bg-gray-300 rounded-full"></span> 
+                            <span class="text-brand-600 font-bold">${post.file_size || '0 KB'}</span> <span class="w-1 h-1 bg-gray-300 rounded-full"></span> 
                             <span>${post.views} views</span>
                             ${isProtected ? '<span class="ml-1 text-[10px] bg-gray-200 px-1.5 rounded text-gray-600"><i class="fa-solid fa-lock text-[8px]"></i></span>' : ''}
-                            ${expired ? `<span class="w-1 h-1 bg-gray-300 rounded-full"></span><span class="text-red-500">Expired</span>` : ''}
                         </div>
-
-                        ${(hasSender || hasReceiver) ? `
-                            <div class="mt-3 pt-2 border-t border-gray-100 flex items-center text-xs text-gray-500">
-                                ${hasSender ? `<span class="mr-1">From: <b class="text-brand-600">${post.sent_by}</b></span>` : ''}
-                                ${(hasSender && hasReceiver) ? '<i class="fa-solid fa-arrow-right-long mx-2 text-gray-300"></i>' : ''}
-                                ${hasReceiver ? `<span>To: <b class="text-brand-600">${post.sent_to}</b></span>` : ''}
-                            </div>
-                        ` : ''}
+                        ${(post.sent_by || post.sent_to) ? `<div class="mt-3 pt-2 border-t border-gray-100 flex items-center text-xs text-gray-500">${post.sent_by ? `<span class="mr-1">From: <b>${post.sent_by}</b></span>` : ''} ${post.sent_to ? `<i class="fa-solid fa-arrow-right-long mx-2 text-gray-300"></i> <span>To: <b>${post.sent_to}</b></span>` : ''}</div>` : ''}
                     </div>
-
                     <div class="shrink-0 flex flex-col gap-2 pt-1">
-                        ${expired 
-                            ? `<button disabled class="w-10 h-10 rounded-full bg-gray-100 text-gray-400 flex items-center justify-center cursor-not-allowed"><i class="fa-solid fa-ban"></i></button>`
-                            : `
-                            <div class="flex flex-col gap-2">
-                                <button onclick="openShareModal('${post.shareable_url || ''}')" class="w-10 h-10 rounded-full bg-white text-gray-500 hover:text-brand-600 hover:shadow-md flex items-center justify-center transition border border-gray-100">
-                                    <i class="fa-solid fa-share-nodes"></i>
-                                </button>
-                                <button onclick="openFile('${post.password || ''}','${post.file_url}', '${(post.original_name || post.filename).replace(/'/g, "\\'")}')" class="w-10 h-10 rounded-full bg-brand-50 text-brand-600 hover:bg-brand-600 hover:text-white flex items-center justify-center transition-colors shadow-sm border border-brand-100">
-                                    <i class="fa-solid ${isProtected ? 'fa-lock' : 'fa-download'}"></i>
-                                </button>
-                            </div>
-                            `
-                        }
+                        ${!expired ? `
+                            <button onclick="openShareModal('${post.shareable_url || ''}')" class="w-10 h-10 rounded-full bg-white text-gray-500 hover:text-brand-600 shadow-sm border border-gray-100 flex items-center justify-center transition"><i class="fa-solid fa-share-nodes"></i></button>
+                            <button onclick="openFile('${post.password || ''}','${post.file_url}', '${(post.original_name || post.filename).replace(/'/g, "\\'")}')" class="w-10 h-10 rounded-full bg-brand-50 text-brand-600 hover:bg-brand-600 hover:text-white shadow-sm border border-brand-100 flex items-center justify-center transition"><i class="fa-solid ${isProtected ? 'fa-lock' : 'fa-download'}"></i></button>
+                        ` : `<button disabled class="w-10 h-10 rounded-full bg-gray-100 text-gray-400 flex items-center justify-center"><i class="fa-solid fa-ban"></i></button>`}
                     </div>
-                </div>
-            `;
+                </div>`;
             container.appendChild(div);
         }
 
-        // ----- View Toggle Logic -----
         window.toggleView = function(viewName) {
             const feedSection = document.getElementById('feedSection');
             const uploadSection = document.getElementById('uploadSection');
@@ -667,238 +650,179 @@
                 uploadSection.classList.add('hidden-page');
                 feedSection.classList.remove('hidden-page');
                 setTimeout(() => feedSection.classList.add('active-page'), 10);
-                
                 document.getElementById('searchContainer').classList.remove('hidden');
                 document.getElementById('feedTitle').innerText = "Available Files";
                 document.getElementById('feedSubtitle').innerText = "Secure any materials. Shared temporarily.";
                 document.getElementById('showAllBtn').classList.add('hidden');
                 
+                // Clear fields
+                document.getElementById("emailTo").value = "";
+                document.getElementById("emailFromName").value = "";
+                document.getElementById("emailMessage").value = "";
+                document.getElementById("filename").value = "";
+                
                 fetchFeed(); 
             }
         }
 
-        // ----- Search/Filter Logic -----
         window.filterFiles = function() {
             const input = document.getElementById('searchInput');
             const filter = input.value.toLowerCase();
-            const feed = document.getElementById('feed');
-            const items = feed.getElementsByClassName('feed-item');
-
+            const items = document.getElementsByClassName('feed-item');
             for (let i = 0; i < items.length; i++) {
-                // Search within the entire text content of the card (covers desc, sender, receiver)
-                const textContent = items[i].innerText || items[i].textContent;
-                if (textContent.toLowerCase().indexOf(filter) > -1) {
-                    items[i].style.display = "";
-                } else {
-                    items[i].style.display = "none";
-                }
-            }
-        }
-
-        // ----- Confirm Add File -----
-        window.confirmAddFile = function() {
-            document.getElementById('passwordToggle').checked = false;
-            window.togglePasswordInput();
-            
-            if(confirm("Do you want to add a new file?")) {
-                toggleView('upload');
+                if (items[i].innerText.toLowerCase().indexOf(filter) > -1) { items[i].style.display = ""; } 
+                else { items[i].style.display = "none"; }
             }
         }
 
         window.updateFileName = function(input) {
             const label = document.getElementById('fileLabel');
-            if(input.files && input.files[0]) {
-                label.innerHTML = `<span class="text-brand-600 font-bold">${input.files[0].name}</span>`;
+            if(input.files && input.files.length > 0) {
+                label.innerHTML = `<span class="text-brand-600 font-bold">${input.files.length === 1 ? input.files[0].name : input.files.length + " files (will be Zipped)"}</span>`;
             }
         }
 
-        // ----- Upload Logic -----
-        async function upload() {
+        async function handleUploadProcess() {
             const btn = document.getElementById("uploadBtn");
-            const originalText = btn.innerHTML;
-            
-            const fileInput = document.getElementById("file").files[0];
-            const filename = document.getElementById("filename").value.trim();
-            const description = document.getElementById("description").value.trim();
-            const sentBy = document.getElementById("sentBy").value.trim();
-            const sentTo = document.getElementById("sentTo").value.trim();
-            
-            const usePassword = document.getElementById('passwordToggle').checked;
-            let password = null;
-            if(usePassword) {
+            const originalText = btn.innerText;
+            const files = document.getElementById("file").files;
+
+            if (files.length === 0) { alert("⚠️ Select at least one file."); return; }
+
+            let filename, description, sentBy, sentTo, emailTo, emailFromName, emailMessage, password = null;
+            if(document.getElementById('passwordToggle').checked) {
                 password = document.getElementById("password").value.trim();
-                if(!password) {
-                    alert("⚠️ Please enter a password or disable protection.");
-                    return;
-                }
-            }
-            
-            if (!fileInput || !filename) {
-                alert("⚠️ Please select a file and enter a title.");
-                return;
+                if(!password) { alert("⚠️ Enter a password."); return; }
             }
 
-            const progressContainer = document.getElementById("progressContainer");
-            const progressBar = document.getElementById("progressBar");
-            const progressText = document.getElementById("progressText");
-
-            const originalName = fileInput.name;
-            const fileSizeFormatted = formatBytes(fileInput.size);
+            if(currentMode === 'feed') {
+                filename = document.getElementById("filename").value.trim();
+                if(!filename) { alert("⚠️ Title is required."); return; }
+                description = document.getElementById("description").value.trim();
+                sentBy = document.getElementById("sentBy").value.trim();
+                sentTo = document.getElementById("sentTo").value.trim();
+            } else {
+                emailTo = document.getElementById("emailTo").value.trim();
+                emailFromName = document.getElementById("emailFromName").value.trim();
+                emailMessage = document.getElementById("emailMessage").value.trim();
+                if(!emailTo || !emailFromName) { alert("⚠️ Email and Name required."); return; }
+                filename = `Sent via Email to ${emailTo}`;
+                description = emailMessage;
+                sentBy = emailFromName;
+                sentTo = emailTo;
+            }
 
             btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> Processing...';
             btn.disabled = true;
-            btn.classList.add('opacity-70', 'cursor-not-allowed');
-            
-            progressContainer.classList.remove("hidden");
-            progressBar.style.width = "0%";
-            progressText.innerText = "0%";
-
-            const formData = new FormData();
-            formData.append("file", fileInput);
-            formData.append("upload_preset", uploadPreset);
-            formData.append("resource_type", "auto"); 
-
-            const xhr = new XMLHttpRequest();
-            
-            xhr.upload.addEventListener("progress", (event) => {
-                if (event.lengthComputable) {
-                    const percent = Math.round((event.loaded / event.total) * 100);
-                    progressBar.style.width = percent + "%";
-                    progressText.innerText = percent + "%";
-                }
-            });
-
-            xhr.onload = async () => {
-                if (xhr.status === 200) {
-                    try {
-                        const cloudData = JSON.parse(xhr.responseText);
-                        const shareUrlUUID = crypto.randomUUID();
-
-                        const { error } = await supabase.from('posts').insert([{
-                            title: filename + (password ? "_" + password : ""),
-                            filename,
-                            description,
-                            sent_by: sentBy,
-                            sent_to: sentTo,
-                            password: password, 
-                            file_url: cloudData.secure_url,
-                            views: 0,
-                            original_name: originalName, 
-                            file_size: fileSizeFormatted,
-                            shareable_url: shareUrlUUID
-                        }]);
-
-                        if (error) throw error;
-
-                        alert("Upload successful! 🎉");
-                        // Reset Form
-                        document.getElementById("filename").value = "";
-                        document.getElementById("description").value = "";
-                        document.getElementById("sentBy").value = "";
-                        document.getElementById("sentTo").value = "";
-                        document.getElementById("file").value = "";
-                        document.getElementById("password").value = "";
-                        document.getElementById("fileLabel").innerText = "Click to choose file or Camera";
-                        
-                        toggleView('feed');
-
-                    } catch (err) {
-                        console.error(err);
-                        alert("Database Error: " + err.message);
-                    }
-                } else {
-                    alert("Upload Failed. Cloudinary Error.");
-                }
-                
-                resetUploadUI();
-            };
-
-            xhr.onerror = () => {
-                alert("Network Error during upload.");
-                resetUploadUI();
-            };
-
-            xhr.open("POST", `https://api.cloudinary.com/v1_1/${cloudName}/auto/upload`);
-            xhr.send(formData);
-
-            function resetUploadUI() {
-                btn.innerHTML = originalText;
-                btn.disabled = false;
-                btn.classList.remove('opacity-70', 'cursor-not-allowed');
-                progressContainer.classList.add("hidden");
-            }
-        }
-
-        // ----- Modal & Action Logic -----
-        window.openFile = async function(passwordInput, fileUrl, fileName) {
-            
-            if (passwordInput && passwordInput !== 'null' && passwordInput !== '') {
-                const input = prompt("🔐 Enter file password:");
-                if (input !== passwordInput) {
-                    alert("❌ Wrong password");
-                    return;
-                }
-            }
+            document.getElementById("progressContainer").classList.remove("hidden");
+            const progressBar = document.getElementById("progressBar");
+            const progressText = document.getElementById("progressText");
 
             try {
-                const { data: posts } = await supabase.from('posts').select('views').eq('file_url', fileUrl).single();
-                if(posts) {
-                    await supabase.from('posts').update({ views: (posts.views || 0) + 1 }).eq('file_url', fileUrl);
+                let fileToUpload, finalOriginalName;
+                if (files.length > 1) {
+                    progressText.innerText = "Zipping...";
+                    const zip = new JSZip();
+                    for (let i = 0; i < files.length; i++) { zip.file(files[i].name, files[i]); }
+                    fileToUpload = await zip.generateAsync({type:"blob"});
+                    finalOriginalName = "bundle_archive.zip";
+                } else {
+                    fileToUpload = files[0];
+                    finalOriginalName = files[0].name;
                 }
-                
-                const modal = document.getElementById('actionModal');
-                const nameEl = document.getElementById('modalFileName');
-                const downloadBtn = document.getElementById('downloadLink');
+                const fileSizeFormatted = formatBytes(fileToUpload.size);
 
-                modal.classList.remove('hidden');
-                nameEl.textContent = fileName;
-                
-                downloadBtn.href = fileUrl;
-                downloadBtn.download = fileName; 
+                const formData = new FormData();
+                formData.append("file", fileToUpload);
+                formData.append("upload_preset", uploadPreset);
+                formData.append("resource_type", "auto"); 
 
-                if(window.resetStars) {
-                    currentRating = 0;
-                    resetStars();
-                    document.getElementById('ratingMessage').classList.add('opacity-0');
+                const xhr = new XMLHttpRequest();
+                const cloudPromise = new Promise((resolve, reject) => {
+                    xhr.upload.addEventListener("progress", (event) => {
+                        if (event.lengthComputable) {
+                            const percent = Math.round((event.loaded / event.total) * 100);
+                            progressBar.style.width = percent + "%";
+                            progressText.innerText = percent + "%";
+                        }
+                    });
+                    xhr.onload = () => xhr.status === 200 ? resolve(JSON.parse(xhr.responseText)) : reject("Cloudinary Error");
+                    xhr.onerror = () => reject("Network Error");
+                    xhr.open("POST", `https://api.cloudinary.com/v1_1/${cloudName}/auto/upload`);
+                    xhr.send(formData);
+                });
+
+                const cloudData = await cloudPromise;
+                const shareUrlUUID = crypto.randomUUID();
+                const fileLink = cloudData.secure_url;
+
+                const { error } = await supabase.from('posts').insert([{
+                    title: filename + (password ? "_" + password : ""),
+                    filename, description, sent_by: sentBy, sent_to: sentTo,
+                    password: password, file_url: fileLink, views: 0,
+                    original_name: finalOriginalName, file_size: fileSizeFormatted,
+                    shareable_url: shareUrlUUID
+                }]);
+                if (error) throw error;
+
+                if(currentMode === 'email') {
+                    btn.innerHTML = 'Sending Email...';
+                    await emailjs.send(serviceID, templateID, {
+                        to_name: sentTo, from_name: sentBy, message: emailMessage, file_link: fileLink, reply_to: sentBy
+                    });
+                    alert(`Email sent to ${sentTo}! 📧`);
+                } else {
+                    alert("Upload successful! 🎉");
                 }
+
+                btn.innerText = originalText;
+                btn.disabled = false;
+                document.getElementById("progressContainer").classList.add("hidden");
+                toggleView('feed');
 
             } catch (err) {
                 console.error(err);
-                window.open(fileUrl, '_blank');
+                alert("Error: " + (err.message || err));
+                btn.innerText = originalText;
+                btn.disabled = false;
+                document.getElementById("progressContainer").classList.add("hidden");
             }
-        };
-
-        window.closeModal = function() {
-            document.getElementById('actionModal').classList.add('hidden');
         }
 
-        document.getElementById('actionModal').addEventListener('click', function(e) {
-            if (e.target === this) closeModal();
-        });
-
-        // -------------------------
-        // STAR RATING LOGIC
-        // -------------------------
-        let currentRating = 0;
-
-        window.highlightStars = function(count) {
-            const buttons = document.querySelectorAll('.star-btn');
-            buttons.forEach((btn, index) => {
-                const icon = btn.querySelector('i');
-                if (index < count) {
-                    icon.classList.remove('fa-regular', 'text-gray-300');
-                    icon.classList.add('fa-solid', 'text-yellow-400');
+        window.openFile = async function(passwordInput, fileUrl, fileName) {
+            if (passwordInput && passwordInput !== 'null' && passwordInput !== '') {
+                if (prompt("🔐 Enter file password:") !== passwordInput) { alert("❌ Wrong password"); return; }
+            }
+            try {
+                const { data: posts } = await supabase.from('posts').select('views').eq('file_url', fileUrl).single();
+                if(posts) await supabase.from('posts').update({ views: (posts.views || 0) + 1 }).eq('file_url', fileUrl);
+                
+                const modal = document.getElementById('actionModal');
+                const downloadBtn = document.getElementById('downloadLink');
+                document.getElementById('modalFileName').textContent = fileName;
+                modal.classList.remove('hidden');
+                
+                downloadBtn.href = fileUrl;
+                downloadBtn.download = fileName;
+                if(fileName.includes('bundle_archive') || fileName.endsWith('.zip')) {
+                    downloadBtn.innerHTML = '<i class="fa-solid fa-file-zipper"></i> Download Unzipped Bundle';
                 } else {
-                    icon.classList.remove('fa-solid', 'text-yellow-400');
-                    icon.classList.add('fa-regular', 'text-gray-300');
+                    downloadBtn.innerHTML = '<i class="fa-solid fa-download"></i> Download File';
                 }
+                if(window.resetStars) resetStars();
+            } catch (err) { window.open(fileUrl, '_blank'); }
+        };
+        
+        window.closeModal = function() { document.getElementById('actionModal').classList.add('hidden'); }
+        document.getElementById('actionModal').addEventListener('click', function(e) { if (e.target === this) closeModal(); });
+
+        let currentRating = 0;
+        window.highlightStars = function(count) {
+            document.querySelectorAll('.star-btn i').forEach((icon, i) => {
+                icon.className = i < count ? 'fa-solid fa-star text-2xl text-yellow-400' : 'fa-regular fa-star text-2xl text-gray-300';
             });
         }
-
-        window.resetStars = function() {
-            highlightStars(currentRating);
-        }
-
+        window.resetStars = function() { highlightStars(currentRating); }
         window.submitRating = function(rating) {
             currentRating = rating;
             highlightStars(rating);
@@ -907,7 +831,6 @@
             msg.classList.remove('opacity-0');
             setTimeout(() => { msg.classList.add('opacity-0'); }, 3000);
         }
-
     </script>
 </body>
 </html>
