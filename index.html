@@ -1,17 +1,19 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ShareWithCNR</title>
+    <title>ShareWithCNR v0.2</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
     
     <script src="https://cdn.tailwindcss.com"></script>
     
@@ -33,6 +35,14 @@
                 }
             }
         }
+    </script>
+
+    <script type="text/javascript">
+        // --- EMAILJS INITIALIZATION ---
+        // REPLACE 'YOUR_EMAILJS_PUBLIC_KEY' WITH YOUR ACTUAL KEY
+        (function() {
+            emailjs.init("LoiC920aeT4syRoup"); 
+        })();
     </script>
 
     <style>
@@ -236,7 +246,7 @@
                 <div class="w-9 h-9 rounded-lg bg-gradient-to-tr from-brand-600 to-purple-500 flex items-center justify-center text-white shadow-lg shadow-brand-500/20">
                     <i class="fa-solid fa-share-nodes"></i>
                 </div>
-                <h1 class="text-xl font-bold text-white tracking-wide drop-shadow-sm">ShareWithCNR</h1>
+                <h1 class="text-xl font-bold text-white tracking-wide drop-shadow-sm">ShareWithCNR <span class="text-xs opacity-70 bg-white/20 px-1 rounded">v0.2</span></h1>
             </div>
             <div class="hidden sm:flex items-center gap-2 text-xs font-semibold text-gray-300 bg-white/10 px-3 py-1.5 rounded-full border border-white/5">
                 <i class="fa-regular fa-clock text-brand-400"></i> Files expire in 48h
@@ -305,26 +315,36 @@
 
                         <div class="grid grid-cols-2 gap-4">
                             <div>
-                                <label class="block text-xs font-bold text-gray-500 uppercase mb-1.5 ml-1">Sent By <span class="text-gray-400 font-normal lowercase">(optional)</span></label>
-                                <input type="text" id="sentBy" placeholder="Your Name" 
+                                <label class="block text-xs font-bold text-gray-500 uppercase mb-1.5 ml-1">Your Name</label>
+                                <input type="text" id="sentBy" placeholder="Rajiv KC" 
                                     class="custom-input focus:ring-2 focus:ring-brand-500/20">
                             </div>
                             <div>
-                                <label class="block text-xs font-bold text-gray-500 uppercase mb-1.5 ml-1">Sent To <span class="text-gray-400 font-normal lowercase">(optional)</span></label>
-                                <input type="text" id="sentTo" placeholder="Receiver" 
+                                <label class="block text-xs font-bold text-gray-500 uppercase mb-1.5 ml-1">Receiver Name</label>
+                                <input type="text" id="sentTo" placeholder="Krishna Khanal" 
                                     class="custom-input focus:ring-2 focus:ring-brand-500/20">
                             </div>
                         </div>
 
+                        <div class="bg-indigo-50/50 p-3 rounded-xl border border-indigo-100">
+                            <div class="flex items-center justify-between mb-2">
+                                <label class="block text-xs font-bold text-brand-600 uppercase ml-1"><i class="fa-solid fa-envelope mr-1"></i> Send Link via Email</label>
+                                <span class="text-[10px] text-gray-400 font-medium bg-white px-2 py-0.5 rounded-full border border-gray-200">Optional</span>
+                            </div>
+                            <input type="email" id="emailReceiver" placeholder="iamcnr@proton.me" 
+                                class="custom-input focus:ring-2 focus:ring-brand-500/20 border-indigo-200">
+                            <p class="text-[10px] text-gray-400 mt-1 ml-1">If filled, we will email the download link to this address.</p>
+                        </div>
+
                         <div>
-                            <label class="block text-xs font-bold text-gray-500 uppercase mb-1.5 ml-1">Attachment <span class="text-red-400">*</span></label>
+                            <label class="block text-xs font-bold text-gray-500 uppercase mb-1.5 ml-1">Attachment(s) <span class="text-red-400">*</span></label>
                             
-                            <input type="file" id="file" class="hidden" accept="image/*,application/pdf,video/*,.doc,.docx,.zip,.rar" onchange="updateFileName(this)">
+                            <input type="file" id="file" multiple class="hidden" accept="image/*,application/pdf,video/*,.doc,.docx,.zip,.rar" onchange="updateFileName(this)">
                             
                             <label for="file" class="flex flex-col items-center justify-center w-full h-24 border-2 border-dashed border-gray-300 rounded-xl cursor-pointer hover:border-brand-500 hover:bg-brand-50/50 transition">
                                 <div class="flex flex-col items-center justify-center pt-2 pb-3">
                                     <i class="fa-solid fa-folder-open text-xl text-gray-400 mb-1"></i>
-                                    <p id="fileLabel" class="text-sm text-gray-500 font-medium">Click to choose file or Camera</p>
+                                    <p id="fileLabel" class="text-sm text-gray-500 font-medium">Click to choose file(s)</p>
                                 </div>
                             </label>
                         </div>
@@ -347,12 +367,12 @@
                             </div>
                         </div>
                         <button id="uploadBtn" class="w-full py-4 mt-2 bg-gradient-to-r from-brand-600 to-indigo-600 hover:from-brand-700 hover:to-indigo-700 text-white font-bold text-lg rounded-xl shadow-lg shadow-brand-500/30 transform transition-all active:scale-[0.98]">
-                            Upload
+                            Upload & Share
                         </button>
                         
                         <div id="progressContainer" class="hidden mt-4">
                             <div class="flex justify-between text-xs font-bold text-gray-500 mb-1">
-                                <span>Uploading...</span>
+                                <span id="progressLabel">Uploading...</span>
                                 <span id="progressText">0%</span>
                             </div>
                             <div class="w-full bg-gray-200 rounded-full h-2.5 overflow-hidden">
@@ -708,21 +728,28 @@
 
         window.updateFileName = function(input) {
             const label = document.getElementById('fileLabel');
-            if(input.files && input.files[0]) {
-                label.innerHTML = `<span class="text-brand-600 font-bold">${input.files[0].name}</span>`;
+            if(input.files && input.files.length > 0) {
+                if(input.files.length === 1) {
+                    label.innerHTML = `<span class="text-brand-600 font-bold">${input.files[0].name}</span>`;
+                } else {
+                    label.innerHTML = `<span class="text-brand-600 font-bold">${input.files.length} files selected (will be zipped)</span>`;
+                }
             }
         }
 
-        // ----- Upload Logic -----
+        // ----- Upload Logic (Updated for ZIP & Email) -----
         async function upload() {
             const btn = document.getElementById("uploadBtn");
             const originalText = btn.innerHTML;
             
-            const fileInput = document.getElementById("file").files[0];
+            const fileInput = document.getElementById("file");
+            const files = fileInput.files;
+            
             const filename = document.getElementById("filename").value.trim();
             const description = document.getElementById("description").value.trim();
             const sentBy = document.getElementById("sentBy").value.trim();
             const sentTo = document.getElementById("sentTo").value.trim();
+            const emailReceiver = document.getElementById("emailReceiver").value.trim();
             
             const usePassword = document.getElementById('passwordToggle').checked;
             let password = null;
@@ -734,93 +761,143 @@
                 }
             }
             
-            if (!fileInput || !filename) {
-                alert("⚠️ Please select a file and enter a title.");
+            if (files.length === 0 || !filename) {
+                alert("⚠️ Please select files and enter a title.");
                 return;
             }
 
             const progressContainer = document.getElementById("progressContainer");
             const progressBar = document.getElementById("progressBar");
             const progressText = document.getElementById("progressText");
+            const progressLabel = document.getElementById("progressLabel");
 
-            const originalName = fileInput.name;
-            const fileSizeFormatted = formatBytes(fileInput.size);
-
-            btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> Processing...';
+            // Disable UI
             btn.disabled = true;
             btn.classList.add('opacity-70', 'cursor-not-allowed');
-            
             progressContainer.classList.remove("hidden");
             progressBar.style.width = "0%";
             progressText.innerText = "0%";
 
-            const formData = new FormData();
-            formData.append("file", fileInput);
-            formData.append("upload_preset", uploadPreset);
-            formData.append("resource_type", "auto"); 
-
-            const xhr = new XMLHttpRequest();
-            
-            xhr.upload.addEventListener("progress", (event) => {
-                if (event.lengthComputable) {
-                    const percent = Math.round((event.loaded / event.total) * 100);
-                    progressBar.style.width = percent + "%";
-                    progressText.innerText = percent + "%";
-                }
-            });
-
-            xhr.onload = async () => {
-                if (xhr.status === 200) {
-                    try {
-                        const cloudData = JSON.parse(xhr.responseText);
-                        const shareUrlUUID = crypto.randomUUID();
-
-                        const { error } = await supabase.from('posts').insert([{
-                            title: filename + (password ? "_" + password : ""),
-                            filename,
-                            description,
-                            sent_by: sentBy,
-                            sent_to: sentTo,
-                            password: password, 
-                            file_url: cloudData.secure_url,
-                            views: 0,
-                            original_name: originalName, 
-                            file_size: fileSizeFormatted,
-                            shareable_url: shareUrlUUID
-                        }]);
-
-                        if (error) throw error;
-
-                        alert("Upload successful! 🎉");
-                        // Reset Form
-                        document.getElementById("filename").value = "";
-                        document.getElementById("description").value = "";
-                        document.getElementById("sentBy").value = "";
-                        document.getElementById("sentTo").value = "";
-                        document.getElementById("file").value = "";
-                        document.getElementById("password").value = "";
-                        document.getElementById("fileLabel").innerText = "Click to choose file or Camera";
-                        
-                        toggleView('feed');
-
-                    } catch (err) {
-                        console.error(err);
-                        alert("Database Error: " + err.message);
-                    }
-                } else {
-                    alert("Upload Failed. Cloudinary Error.");
-                }
+            try {
+                // --- STEP 1: PREPARE FILE (ZIP IF MULTIPLE) ---
+                let fileToUpload = null;
+                let originalName = "";
                 
-                resetUploadUI();
-            };
+                if (files.length > 1) {
+                    btn.innerHTML = '<i class="fa-solid fa-file-zipper fa-spin"></i> Zipping...';
+                    progressLabel.innerText = "Compressing files...";
+                    
+                    const zip = new JSZip();
+                    // Add all files to the zip
+                    Array.from(files).forEach(file => {
+                        zip.file(file.name, file);
+                    });
+                    
+                    // Generate Zip Blob
+                    fileToUpload = await zip.generateAsync({type:"blob"});
+                    originalName = "bundle_" + Date.now() + ".zip"; // Custom name for the bundle
+                } else {
+                    fileToUpload = files[0];
+                    originalName = files[0].name;
+                }
 
-            xhr.onerror = () => {
-                alert("Network Error during upload.");
-                resetUploadUI();
-            };
+                const fileSizeFormatted = formatBytes(fileToUpload.size);
 
-            xhr.open("POST", `https://api.cloudinary.com/v1_1/${cloudName}/auto/upload`);
-            xhr.send(formData);
+                // --- STEP 2: UPLOAD TO CLOUDINARY ---
+                btn.innerHTML = '<i class="fa-solid fa-cloud-arrow-up fa-spin"></i> Uploading...';
+                progressLabel.innerText = "Uploading to Cloud...";
+
+                const formData = new FormData();
+                formData.append("file", fileToUpload, originalName); // Pass Blob/File and Name
+                formData.append("upload_preset", uploadPreset);
+                formData.append("resource_type", "auto"); 
+
+                const xhr = new XMLHttpRequest();
+                
+                xhr.upload.addEventListener("progress", (event) => {
+                    if (event.lengthComputable) {
+                        const percent = Math.round((event.loaded / event.total) * 100);
+                        progressBar.style.width = percent + "%";
+                        progressText.innerText = percent + "%";
+                    }
+                });
+
+                xhr.onload = async () => {
+                    if (xhr.status === 200) {
+                        try {
+                            const cloudData = JSON.parse(xhr.responseText);
+                            const shareUrlUUID = crypto.randomUUID();
+
+                            // --- STEP 3: SAVE TO SUPABASE ---
+                            const { error } = await supabase.from('posts').insert([{
+                                title: filename + (password ? "_" + password : ""),
+                                filename,
+                                description,
+                                sent_by: sentBy,
+                                sent_to: sentTo,
+                                password: password, 
+                                file_url: cloudData.secure_url,
+                                views: 0,
+                                original_name: originalName, 
+                                file_size: fileSizeFormatted,
+                                shareable_url: shareUrlUUID
+                            }]);
+
+                            if (error) throw error;
+
+                            // --- STEP 4: SEND EMAIL (IF PROVIDED) ---
+                            if (emailReceiver) {
+                                btn.innerHTML = '<i class="fa-solid fa-paper-plane fa-spin"></i> Sending Email...';
+                                progressLabel.innerText = "Sending Email...";
+                                
+                                const fullLink = `${window.location.origin}${window.location.pathname}?ref=${shareUrlUUID}`;
+                                
+                                await emailjs.send("service_teqtpsl", "template_92vutzu", {
+                                    to_name: sentTo || "User",
+                                    from_name: sentBy || "ShareWithCNR",
+                                    message: description || "hi",
+                                    file_link: fullLink,
+                                    to_email: emailReceiver,
+                                });
+                            }
+
+                            alert("Upload successful! 🎉" + (emailReceiver ? " Email sent." : ""));
+                            
+                            // Reset Form
+                            document.getElementById("filename").value = "";
+                            document.getElementById("description").value = "";
+                            document.getElementById("sentBy").value = "";
+                            document.getElementById("sentTo").value = "";
+                            document.getElementById("emailReceiver").value = "";
+                            document.getElementById("file").value = "";
+                            document.getElementById("password").value = "";
+                            document.getElementById("fileLabel").innerText = "Click to choose file(s)";
+                            
+                            toggleView('feed');
+
+                        } catch (err) {
+                            console.error(err);
+                            alert("Error: " + err.message);
+                        }
+                    } else {
+                        alert("Upload Failed. Cloudinary Error.");
+                    }
+                    resetUploadUI();
+                };
+
+                xhr.onerror = () => {
+                    alert("Network Error during upload.");
+                    resetUploadUI();
+                };
+
+                xhr.open("POST", `https://api.cloudinary.com/v1_1/${cloudName}/auto/upload`);
+                xhr.send(formData);
+
+            } catch (err) {
+                console.error("Zipping error:", err);
+                alert("Error preparing files: " + err.message);
+                resetUploadUI();
+            }
 
             function resetUploadUI() {
                 btn.innerHTML = originalText;
