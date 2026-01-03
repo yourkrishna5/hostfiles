@@ -37,14 +37,6 @@
         }
     </script>
 
-    <script type="text/javascript">
-        // --- EMAILJS INITIALIZATION ---
-        // REPLACE 'YOUR_EMAILJS_PUBLIC_KEY' WITH YOUR ACTUAL KEY
-        (function() {
-            emailjs.init("LoiC920aeT4syRoup"); 
-        })();
-    </script>
-
     <style>
         /* Cosmic Background */
         body {
@@ -414,6 +406,17 @@
 
     <script type="module">
         import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+
+        // --- EMAILJS INITIALIZATION FIXED ---
+        // Moved inside the module to ensure global window object is ready
+        // and accessible within the module scope.
+        (function() {
+            if(window.emailjs) {
+                window.emailjs.init("LoiC920aeT4syRoup"); 
+            } else {
+                console.error("EmailJS library not loaded");
+            }
+        })();
 
         const supabaseUrl = 'https://sofxdshwkkwtfxnmlzem.supabase.co';
         const supabaseKey = 'sb_publishable_VMNVZXmmep05ihMaYjC9ug_FDxfoPL3';
@@ -846,22 +849,32 @@
                             if (error) throw error;
 
                             // --- STEP 4: SEND EMAIL (IF PROVIDED) ---
+                            let emailSent = false;
                             if (emailReceiver) {
                                 btn.innerHTML = '<i class="fa-solid fa-paper-plane fa-spin"></i> Sending Email...';
                                 progressLabel.innerText = "Sending Email...";
                                 
                                 const fullLink = `${window.location.origin}${window.location.pathname}?ref=${shareUrlUUID}`;
                                 
-                                await emailjs.send("service_teqtpsl", "template_92vutzu", {
-                                    to_name: sentTo || "User",
-                                    from_name: sentBy || "ShareWithCNR",
-                                    message: description || "hi",
-                                    file_link: fullLink,
-                                    to_email: emailReceiver,
-                                });
+                                // Explicitly using window.emailjs to ensure scope correctness
+                                if(window.emailjs) {
+                                    try {
+                                        await window.emailjs.send("service_teqtpsl", "template_92vutzu", {
+                                            to_name: sentTo || "User",
+                                            from_name: sentBy || "ShareWithCNR",
+                                            message: description || "hi",
+                                            file_link: fullLink,
+                                            to_email: emailReceiver,
+                                        });
+                                        emailSent = true;
+                                    } catch(e) {
+                                        console.error("EmailJS failed:", e);
+                                        alert("File uploaded, but email failed to send.");
+                                    }
+                                }
                             }
 
-                            alert("Upload successful! 🎉" + (emailReceiver ? " Email sent." : ""));
+                            alert("Upload successful! 🎉" + (emailSent ? " Email sent." : ""));
                             
                             // Reset Form
                             document.getElementById("filename").value = "";
