@@ -1,413 +1,1003 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>NULLCHAT // VOID_EDITION</title>
+
+
+<!DOCTYPE html>  <html lang="en">  
+<head>  
+    <meta charset="UTF-8">  
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">  
+    <title>ShareWithCNR v0.2</title>  
+    <meta name="google-site-verification" content="kQOXx-VvAAo4LjJtPL8AUvdOEut2EcLkZg2i_VM_UTk" />  
+    <link rel="preconnect" href="https://fonts.googleapis.com">  
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>  
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">  
   
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-  <link href="https://cdn.jsdelivr.net/npm/remixicon@2.5.0/fonts/remixicon.css" rel="stylesheet">
-  <link href="https://fonts.googleapis.com/css2?family=Syncopate:wght@400;700&family=JetBrains+Mono:wght@300;500;800&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>  
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>  
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>  
+  
+<script src="https://cdn.tailwindcss.com"></script>  
+  
+<script>  
+    tailwind.config = {  
+        theme: {  
+            extend: {  
+                fontFamily: {  
+                    sans: ['Outfit', 'sans-serif'],  
+                },  
+                colors: {  
+                    brand: {  
+                        500: '#6366f1', // Indigo  
+                        600: '#4f46e5',  
+                        700: '#4338ca',  
+                    },  
+                    dark: '#0f172a'  
+                }  
+            }  
+        }  
+    }  
+</script>  
 
-  <style>
-    :root {
-      --primary: #00f2ff;
-      --accent: #7000ff;
-      --bg: #030305;
-      --glass: rgba(15, 15, 25, 0.7);
-      --glass-bright: rgba(255, 255, 255, 0.05);
-      --border: rgba(255, 255, 255, 0.1);
-      --text: #ffffff;
-      --font-main: 'JetBrains Mono', monospace;
-      --font-hdr: 'Syncopate', sans-serif;
-    }
+<style>  
+    /* Cosmic Background */  
+    body {  
+        background-color: #0f172a;  
+        background-image:   
+            radial-gradient(at 0% 0%, hsla(253,16%,7%,1) 0, transparent 50%),   
+            radial-gradient(at 50% 0%, hsla(225,39%,30%,1) 0, transparent 50%),   
+            radial-gradient(at 100% 0%, hsla(339,49%,30%,1) 0, transparent 50%);  
+        background-attachment: fixed;  
+        background-size: cover;  
+        color: #f8fafc;  
+    }  
 
-    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; outline: none; }
-
-    body, html {
-      margin: 0; padding: 0; height: 100vh; width: 100vw;
-      background: var(--bg); color: var(--text);
-      font-family: var(--font-main); overflow: hidden;
-    }
-
-    /* --- 3D SCENE --- */
-    #canvas-container {
-      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-      z-index: 1; background: radial-gradient(circle at center, #110022 0%, #030305 100%);
-    }
-
-    /* --- LOGIN UI --- */
-    #login-overlay {
-      position: fixed; inset: 0; z-index: 100;
-      display: flex; align-items: center; justify-content: center;
-      background: rgba(0,0,0,0.9); backdrop-filter: blur(20px);
-      transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
-    }
-
-    .login-card {
-      width: 90%; max-width: 400px; padding: 40px;
-      background: var(--glass); border: 1px solid var(--border);
-      border-radius: 20px; text-align: center;
-      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-      position: relative;
-    }
-
-    .login-card h1 {
-      font-family: var(--font-hdr); font-size: 1.5rem; letter-spacing: 5px;
-      margin-bottom: 5px; color: var(--primary);
-    }
-
-    .login-card p { font-size: 0.7rem; opacity: 0.5; margin-bottom: 30px; }
-
-    .input-group { position: relative; margin-bottom: 20px; }
-    .input-group input {
-      width: 100%; background: var(--glass-bright); border: 1px solid var(--border);
-      padding: 15px; border-radius: 10px; color: #fff; font-family: var(--font-main);
-      text-align: center; transition: 0.3s;
-    }
-    .input-group input:focus { border-color: var(--primary); box-shadow: 0 0 15px rgba(0, 242, 255, 0.2); }
-
-    .btn-primary {
-      width: 100%; padding: 15px; border: none; border-radius: 10px;
-      background: linear-gradient(90deg, var(--primary), var(--accent));
-      color: #000; font-weight: 800; cursor: pointer;
-      text-transform: uppercase; letter-spacing: 2px; transition: 0.3s;
-    }
-    .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 10px 20px rgba(0, 242, 255, 0.3); }
-
-    /* --- MAIN APP --- */
-    #app-container {
-      position: relative; z-index: 10;
-      width: 100%; height: 100vh;
-      display: none; flex-direction: column;
-      max-width: 1000px; margin: 0 auto;
-    }
-
-    header {
-      padding: 20px; display: flex; justify-content: space-between; align-items: center;
-      background: linear-gradient(to bottom, rgba(0,0,0,0.5), transparent);
-    }
-
-    .logo { font-family: var(--font-hdr); font-weight: 700; font-size: 1rem; }
-    .logo span { color: var(--primary); }
-
-    /* --- CHAT AREA --- */
-    #chat-history {
-      flex: 1; overflow-y: auto; padding: 20px;
-      display: flex; flex-direction: column; gap: 15px;
-      scrollbar-width: none;
-    }
-    #chat-history::-webkit-scrollbar { display: none; }
-
-    .msg {
-      max-width: 80%; display: flex; flex-direction: column;
-      animation: msgIn 0.3s ease-out;
-    }
-    .msg.self { align-self: flex-end; align-items: flex-end; }
-
-    .msg-user { font-size: 0.65rem; font-weight: 800; margin-bottom: 4px; color: var(--primary); opacity: 0.8; }
-    
-    .msg-bubble {
-      padding: 12px 18px; border-radius: 18px;
-      background: var(--glass); border: 1px solid var(--border);
-      backdrop-filter: blur(10px); position: relative;
-      font-size: 0.9rem; line-height: 1.4;
-    }
-    .msg.self .msg-bubble {
-      background: var(--accent); border: none;
-      border-bottom-right-radius: 4px; color: #fff;
-    }
-    .msg:not(.self) .msg-bubble { border-bottom-left-radius: 4px; }
-
-    .msg-status { font-size: 10px; margin-top: 4px; opacity: 0.5; }
-
-    .msg-img { max-width: 250px; border-radius: 10px; margin-top: 5px; border: 1px solid var(--border); }
-    audio { height: 35px; margin-top: 5px; filter: invert(1); }
-
-    /* --- INPUT AREA --- */
-    .input-wrapper {
-      padding: 20px; padding-bottom: calc(20px + env(safe-area-inset-bottom));
-    }
-    .input-bar {
-      background: var(--glass); border: 1px solid var(--border);
-      backdrop-filter: blur(20px); border-radius: 20px;
-      display: flex; align-items: center; padding: 5px 15px; gap: 10px;
-    }
-
-    #msg-input {
-      flex: 1; background: transparent; border: none; color: #fff;
-      padding: 12px 0; font-family: var(--font-main);
-    }
-
-    .icon-btn {
-      background: transparent; border: none; color: var(--text);
-      font-size: 1.3rem; cursor: pointer; opacity: 0.6; transition: 0.2s;
-      display: flex; align-items: center;
-    }
-    .icon-btn:hover { opacity: 1; color: var(--primary); }
-    .icon-btn.active { color: #ff4b2b; animation: pulse 1s infinite; }
-
-    /* --- ANIMATIONS --- */
-    @keyframes msgIn { from { opacity:0; transform: translateY(10px); } to { opacity:1; transform: translateY(0); } }
-    @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
-
-    /* --- MOBILE RESPONSIVENESS --- */
-    @media (max-width: 600px) {
-      .login-card { width: 85%; padding: 30px 20px; }
-      #app-container { width: 100%; }
-      .msg { max-width: 90%; }
-    }
-  </style>
-</head>
-<body>
-
-  <div id="canvas-container"></div>
-
-  <div id="login-overlay">
-    <div class="login-card">
-      <h1>NULLCHAT</h1>
-      <p>VOID EDITION // ENCRYPTED CONNECTION</p>
-      <div class="input-group">
-        <input type="text" id="username-input" placeholder="ACCESS KEY / NAME" autocomplete="off">
-      </div>
-      <button class="btn-primary" onclick="initSession()">INITIALIZE</button>
-    </div>
-  </div>
-
-  <div id="app-container">
-    <header>
-      <div class="logo">NULL<span>CHAT</span>.v2</div>
-      <div id="connection-status" style="font-size: 0.6rem; color: var(--primary)">● SECURE</div>
-    </header>
-
-    <div id="chat-history"></div>
-
-    <div class="input-wrapper">
-      <form class="input-bar" onsubmit="sendMessage(event)">
-        <input type="file" id="file-input" hidden accept="image/*" onchange="uploadMedia('image')">
-        
-        <button type="button" class="icon-btn" onclick="document.getElementById('file-input').click()">
-          <i class="ri-add-circle-line"></i>
-        </button>
-
-        <input type="text" id="msg-input" placeholder="Type a message..." autocomplete="off">
-
-        <button type="button" class="icon-btn" id="mic-btn" onmousedown="startVoice()" onmouseup="stopVoice()" ontouchstart="startVoice()" ontouchend="stopVoice()">
-          <i class="ri-mic-2-line"></i>
-        </button>
-        
-        <button type="submit" class="icon-btn" style="color: var(--primary)">
-          <i class="ri-send-plane-2-fill"></i>
-        </button>
-      </form>
-    </div>
-  </div>
-
-  <script>
-    // --- CONFIG ---
-    const SB_URL = 'https://xdvbymswgsxfssiglmse.supabase.co';
-    const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhkdmJ5bXN3Z3N4ZnNzaWdsbXNlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg5MDc5NzksImV4cCI6MjA4NDQ4Mzk3OX0._l2SKIUEDg9Z2sFyDWO6JphCQQWqomEcfvL3zk-eT10';
-    const db = supabase.createClient(SB_URL, SB_KEY);
-
-    let user = null;
-    let username = "";
-    let mediaRecorder = null;
-    let audioChunks = [];
-
-    // --- 3D BACKGROUND (Nebula System) ---
-    const init3D = () => {
-      const scene = new THREE.Scene();
-      const camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
-      const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
-      renderer.setSize(window.innerWidth, window.innerHeight);
-      document.getElementById('canvas-container').appendChild(renderer.domElement);
-
-      const geometry = new THREE.BufferGeometry();
-      const vertices = [];
-      for (let i = 0; i < 5000; i++) {
-        vertices.push(THREE.MathUtils.randFloatSpread(2000), THREE.MathUtils.randFloatSpread(2000), THREE.MathUtils.randFloatSpread(2000));
-      }
-      geometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
-      const material = new THREE.PointsMaterial({ color: 0x7000ff, size: 2, transparent: true, opacity: 0.8 });
-      const points = new THREE.Points(geometry, material);
-      scene.add(points);
-
-      camera.position.z = 500;
-      function animate() {
-        requestAnimationFrame(animate);
-        points.rotation.y += 0.001;
-        points.rotation.x += 0.0005;
-        renderer.render(scene, camera);
-      }
-      animate();
-      window.addEventListener('resize', () => {
-        camera.aspect = window.innerWidth / window.innerHeight;
-        camera.updateProjectionMatrix();
-        renderer.setSize(window.innerWidth, window.innerHeight);
-      });
-    };
-    init3D();
-
-    // --- SESSION LOGIC ---
-    async function initSession() {
-      username = document.getElementById('username-input').value.trim();
-      if(!username) return alert("Identify yourself.");
-
-      const { data, error } = await db.auth.signInAnonymously();
-      if(error) return alert("System Overload.");
+    /* Glass Panel */  
+    .glass-panel {  
+        background: rgba(255, 255, 255, 0.9);  
+        backdrop-filter: blur(12px);  
+        -webkit-backdrop-filter: blur(12px);  
+        border: 1px solid rgba(255, 255, 255, 0.2);  
+        box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.1);  
+    }  
       
-      user = data.user;
-      await db.from('profiles').upsert({ id: user.id, username: username, updated_at: new Date() });
+    /* Dark Glass for Search/Inputs */  
+    .glass-dark {  
+        background: rgba(15, 23, 42, 0.6);  
+        backdrop-filter: blur(16px);  
+        -webkit-backdrop-filter: blur(16px);  
+        border: 1px solid rgba(255, 255, 255, 0.1);  
+    }  
 
-      document.getElementById('login-overlay').style.opacity = '0';
-      document.getElementById('login-overlay').style.pointerEvents = 'none';
-      document.getElementById('app-container').style.display = 'flex';
+    /* Stylish Nav Background */  
+    .nav-glass {  
+        background: rgba(15, 23, 42, 0.85);   
+        backdrop-filter: blur(16px);  
+        -webkit-backdrop-filter: blur(16px);  
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);  
+        box-shadow: 0 4px 30px rgba(0, 0, 0, 0.3);  
+    }  
 
-      loadHistory();
-      subscribeMessages();
-    }
+    /* Page Transitions */  
+    .hidden-page {  
+        display: none;  
+        opacity: 0;  
+        transform: scale(0.95);  
+    }  
+    .active-page {  
+        display: block;  
+        opacity: 1;  
+        transform: scale(1);  
+        animation: fadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);  
+    }  
 
-    // --- CHAT LOGIC ---
-    async function loadHistory() {
-      const { data } = await db.from('messages')
-        .select(`*, profiles(username)`)
-        .order('created_at', { ascending: false }).limit(40);
+    @keyframes fadeIn {  
+        from { opacity: 0; transform: translateY(10px) scale(0.98); }  
+        to { opacity: 1; transform: translateY(0) scale(1); }  
+    }  
+
+    /* FAB Button Animation */  
+    .fab-btn {  
+        transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);  
+    }  
+    .fab-btn:hover {  
+        transform: translateY(-4px) scale(1.1);  
+        box-shadow: 0 10px 25px rgba(99, 102, 241, 0.6);  
+    }  
+    .fab-btn:active {  
+        transform: scale(0.9);  
+    }  
       
-      if(data) {
-        data.reverse().forEach(appendMsg);
-        scrollBottom();
-      }
-    }
+    /* Toggle Switch */  
+    .toggle-checkbox:checked {  
+        right: 0;  
+        border-color: #6366f1;  
+    }  
+    .toggle-checkbox:checked + .toggle-label {  
+        background-color: #6366f1;  
+    }  
 
-    function subscribeMessages() {
-      db.channel('public:messages')
-        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, async (payload) => {
-          if(payload.new.user_id !== user.id) {
-            const { data: prof } = await db.from('profiles').select('username').eq('id', payload.new.user_id).single();
-            appendMsg({ ...payload.new, profiles: prof });
-            scrollBottom();
-          }
-        }).subscribe();
-    }
+    /* Toast Notification */  
+    #toast {  
+        visibility: hidden;  
+        min-width: 250px;  
+        background-color: #333;  
+        color: #fff;  
+        text-align: center;  
+        border-radius: 8px;  
+        padding: 16px;  
+        position: fixed;  
+        z-index: 1000;  
+        left: 50%;  
+        bottom: 30px;  
+        transform: translateX(-50%);  
+        box-shadow: 0 4px 12px rgba(0,0,0,0.3);  
+        opacity: 0;  
+        transition: opacity 0.3s, bottom 0.3s;  
+    }  
+    #toast.show {  
+        visibility: visible;  
+        opacity: 1;  
+        bottom: 50px;  
+    }  
 
-    async function sendMessage(e) {
-      if(e) e.preventDefault();
-      const input = document.getElementById('msg-input');
-      const text = input.value.trim();
-      if(!text) return;
-
-      // Optimistic UI
-      const tempMsg = { 
-        id: Date.now(), 
-        content: text, 
-        user_id: user.id, 
-        profiles: { username: username }, 
-        created_at: new Date(),
-        status: 'sending' 
-      };
-      appendMsg(tempMsg);
-      input.value = "";
-      scrollBottom();
-
-      const { error } = await db.from('messages').insert({
-        user_id: user.id,
-        content: text,
-        media_type: 'text'
-      });
+    /* Custom Scrollbar */  
+    ::-webkit-scrollbar { width: 6px; }  
+    ::-webkit-scrollbar-track { background: transparent; }  
+    ::-webkit-scrollbar-thumb { background: #6366f1; border-radius: 10px; }  
       
-      if(!error) updateStatus(tempMsg.id, 'sent');
-    }
+    .custom-input {  
+        width: 100%;  
+        padding: 0.75rem 1rem;  
+        border-radius: 0.75rem;  
+        background-color: #f9fafb;  
+        border: 2px solid #f3f4f6;  
+        outline: none;  
+        transition: all 0.2s;  
+        font-size: 0.875rem;  
+        color: #374151;  
+    }  
+    .custom-input:focus {  
+        background-color: #fff;  
+        border-color: #6366f1;  
+    }  
 
-    function appendMsg(msg) {
-      const history = document.getElementById('chat-history');
-      const isSelf = msg.user_id === user.id;
+    /* QR Code Styling */  
+    #qrcode img {  
+        margin: 0 auto;  
+        border: 8px solid white;  
+        border-radius: 8px;  
+    }  
+</style>
+
+</head>  
+<body class="min-h-screen flex flex-col antialiased selection:bg-brand-500 selection:text-white">  <div id="toast">Link copied! Share it with friends.</div>  
+
+<div id="shareModal" class="fixed inset-0 z-[110] hidden flex items-center justify-center bg-black/80 backdrop-blur-sm transition-opacity duration-300">  
+    <div class="glass-panel p-6 rounded-2xl max-w-sm w-full mx-4 text-center transform transition-all scale-100 shadow-2xl shadow-brand-500/20 relative">  
+          
+        <button onclick="closeShareModal()" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition">  
+            <i class="fa-solid fa-xmark text-xl"></i>  
+        </button>  
+
+        <h3 class="text-xl font-bold text-gray-800 mb-4">Share File</h3>  
+          
+        <div class="bg-white p-4 rounded-xl shadow-inner mb-4 flex justify-center">  
+            <div id="qrcode"></div>  
+        </div>  
+          
+        <div class="space-y-4">  
+            <div class="relative">  
+                <input type="text" id="shareInput" readonly class="custom-input pr-12 text-xs" value="...">  
+                <button onclick="copyFromModal()" class="absolute right-2 top-1/2 -translate-y-1/2 text-brand-600 hover:text-brand-800 p-2">  
+                    <i class="fa-regular fa-copy text-lg"></i>  
+                </button>  
+            </div>  
+              
+            <p class="text-xs text-gray-400">Scan QR code or copy link to share</p>  
+        </div>  
+    </div>  
+</div>  
+
+<div id="actionModal" class="fixed inset-0 z-[100] hidden flex items-center justify-center bg-black/80 backdrop-blur-sm transition-opacity duration-300">  
+    <div class="glass-panel p-8 rounded-2xl max-w-sm w-full mx-4 text-center transform transition-all scale-100 shadow-2xl shadow-brand-500/20 relative">  
+          
+        <button onclick="closeModal()" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition">  
+            <i class="fa-solid fa-xmark text-xl"></i>  
+        </button>  
+
+        <div class="w-16 h-16 bg-brand-50 rounded-full flex items-center justify-center mx-auto mb-4 text-brand-600">  
+            <i class="fa-solid fa-unlock-keyhole text-2xl"></i>  
+        </div>  
+          
+        <h3 class="text-xl font-bold text-gray-800 mb-1">Access Granted</h3>  
+        <p id="modalFileName" class="text-sm text-gray-500 font-medium mb-6 truncate px-2">filename.pdf</p>  
+          
+        <div class="space-y-6">  
+            <a id="downloadLink" href="#" target="_blank" class="flex items-center justify-center gap-2 w-full py-3 bg-brand-600 hover:bg-brand-700 text-white rounded-xl font-semibold transition shadow-lg shadow-brand-500/30">  
+                <i class="fa-solid fa-download"></i> Download File  
+            </a>  
+              
+            <div class="pt-4 border-t border-gray-200/60">  
+                <p class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">Rate our Service</p>  
+                <div id="starContainer" class="flex justify-center gap-2" onmouseleave="resetStars()">  
+                    <button onclick="submitRating(1)" onmouseenter="highlightStars(1)" class="star-btn transition transform hover:scale-125 focus:outline-none"><i class="fa-regular fa-star text-2xl text-gray-300"></i></button>  
+                    <button onclick="submitRating(2)" onmouseenter="highlightStars(2)" class="star-btn transition transform hover:scale-125 focus:outline-none"><i class="fa-regular fa-star text-2xl text-gray-300"></i></button>  
+                    <button onclick="submitRating(3)" onmouseenter="highlightStars(3)" class="star-btn transition transform hover:scale-125 focus:outline-none"><i class="fa-regular fa-star text-2xl text-gray-300"></i></button>  
+                    <button onclick="submitRating(4)" onmouseenter="highlightStars(4)" class="star-btn transition transform hover:scale-125 focus:outline-none"><i class="fa-regular fa-star text-2xl text-gray-300"></i></button>  
+                    <button onclick="submitRating(5)" onmouseenter="highlightStars(5)" class="star-btn transition transform hover:scale-125 focus:outline-none"><i class="fa-regular fa-star text-2xl text-gray-300"></i></button>  
+                </div>  
+                <p id="ratingMessage" class="text-xs text-brand-600 font-bold h-4 mt-2 opacity-0 transition-opacity duration-300">Thanks for rating!</p>  
+            </div>  
+        </div>  
+    </div>  
+</div>  
+
+<nav class="sticky top-0 z-50 nav-glass">  
+    <div class="max-w-4xl mx-auto px-6 py-4 flex justify-between items-center">  
+        <div onclick="window.location.href=window.location.origin + window.location.pathname" class="flex items-center gap-3 cursor-pointer">  
+            <div class="w-9 h-9 rounded-lg bg-gradient-to-tr from-brand-600 to-purple-500 flex items-center justify-center text-white shadow-lg shadow-brand-500/20">  
+                <i class="fa-solid fa-share-nodes"></i>  
+            </div>  
+            <h1 class="text-xl font-bold text-white tracking-wide drop-shadow-sm">ShareWithCNR <span class="text-xs opacity-70 bg-white/20 px-1 rounded">v0.2</span></h1>  
+        </div>  
+        <div class="hidden sm:flex items-center gap-2 text-xs font-semibold text-gray-300 bg-white/10 px-3 py-1.5 rounded-full border border-white/5">  
+            <i class="fa-regular fa-clock text-brand-400"></i> Files expire in 48h  
+        </div>  
+    </div>  
+</nav>  
+
+<main class="flex-grow container max-w-3xl mx-auto px-4 py-8 relative z-10">  
       
-      const div = document.createElement('div');
-      div.className = `msg ${isSelf ? 'self' : ''}`;
-      div.id = `msg-${msg.id}`;
+    <div id="feedSection" class="active-page">  
+        <div class="flex flex-col items-center mb-8 text-center text-white">  
+            <h2 id="feedTitle" class="text-3xl font-bold mb-2 drop-shadow-md">Available Files</h2>  
+            <p id="feedSubtitle" class="text-gray-300 text-sm max-w-md">Secure any materials. Shared temporarily.</p>  
+            <button id="showAllBtn" onclick="window.location.href=window.location.pathname" class="hidden mt-4 text-xs font-bold bg-white/20 hover:bg-white/30 px-4 py-2 rounded-full transition">  
+                <i class="fa-solid fa-arrow-left mr-2"></i> Show All Files  
+            </button>  
+        </div>  
 
-      let mediaContent = '';
-      if(msg.media_type === 'image') mediaContent = `<img src="${msg.media_url}" class="msg-img">`;
-      if(msg.media_type === 'audio') mediaContent = `<audio src="${msg.media_url}" controls></audio>`;
+        <div class="max-w-md mx-auto mb-8 relative group" id="searchContainer">  
+            <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">  
+                <i class="fa-solid fa-magnifying-glass text-gray-400 group-focus-within:text-brand-400 transition-colors"></i>  
+            </div>  
+            <input type="text" id="searchInput" onkeyup="filterFiles()" placeholder="Search by name, sender, or content..."   
+                class="block w-full pl-11 pr-4 py-3 rounded-xl glass-dark text-white placeholder-gray-400 border border-white/10 focus:border-brand-500/50 focus:ring-2 focus:ring-brand-500/20 outline-none transition-all">  
+        </div>  
 
-      div.innerHTML = `
-        <span class="msg-user">${isSelf ? 'YOU' : msg.profiles.username}</span>
-        <div class="msg-bubble">
-          ${msg.content ? `<div>${escapeHtml(msg.content)}</div>` : ''}
-          ${mediaContent}
-        </div>
-        <div class="msg-status">${isSelf ? (msg.status || 'delivered') : ''}</div>
-      `;
-      history.appendChild(div);
-    }
+        <div id="loader" class="hidden text-center py-12">  
+            <div class="inline-block animate-spin rounded-full h-8 w-8 border-4 border-white/20 border-t-brand-500"></div>  
+            <p class="mt-4 text-white/70 text-sm font-medium animate-pulse">Loading...</p>  
+        </div>  
 
-    // --- MEDIA FLOW ---
-    async function uploadMedia(type) {
-      const file = document.getElementById('file-input').files[0];
-      if(!file) return;
+        <div id="feed" class="space-y-4 pb-24">  
+            </div>  
+    </div>  
 
-      const path = `${type}/${Date.now()}_${file.name}`;
-      const { data, error } = await db.storage.from('chat-media').upload(path, file);
+    <div id="uploadSection" class="hidden-page">  
+        <div class="max-w-lg mx-auto">  
+            <button onclick="toggleView('feed')" class="mb-6 flex items-center text-white/80 hover:text-white transition group">  
+                <div class="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center mr-3 group-hover:bg-white/20 transition">  
+                    <i class="fa-solid fa-arrow-left text-sm"></i>  
+                </div>  
+                <span class="font-medium">Back to Feed</span>  
+            </button>  
+
+            <div class="glass-panel rounded-2xl p-8 shadow-2xl">  
+                <div class="text-center mb-8">  
+                    <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-brand-50 text-brand-600 mb-4 shadow-inner">  
+                        <i class="fa-solid fa-cloud-arrow-up text-3xl"></i>  
+                    </div>  
+                    <h2 class="text-2xl font-bold text-gray-800">Upload New File</h2>  
+                    <p class="text-gray-500 text-sm mt-1">Share content securely</p>  
+                </div>  
+
+                <div class="space-y-5">  
+                    <div class="group">  
+                        <label class="block text-xs font-bold text-gray-500 uppercase mb-1.5 ml-1">File Title <span class="text-red-400">*</span></label>  
+                        <input type="text" id="filename" placeholder="e.g. Physics Notes"   
+                            class="custom-input focus:ring-2 focus:ring-brand-500/20">  
+                    </div>  
+
+                    <div class="group">  
+                        <label class="block text-xs font-bold text-gray-500 uppercase mb-1.5 ml-1">Description <span class="text-gray-400 font-normal lowercase">(optional)</span></label>  
+                        <textarea id="description" rows="2" placeholder="Add a short note..."   
+                            class="custom-input focus:ring-2 focus:ring-brand-500/20 resize-none"></textarea>  
+                    </div>  
+
+                    <div class="grid grid-cols-2 gap-4">  
+                        <div>  
+                            <label class="block text-xs font-bold text-gray-500 uppercase mb-1.5 ml-1">Your Name</label>  
+                            <input type="text" id="sentBy" placeholder="Rajiv KC"   
+                                class="custom-input focus:ring-2 focus:ring-brand-500/20">  
+                        </div>  
+                        <div>  
+                            <label class="block text-xs font-bold text-gray-500 uppercase mb-1.5 ml-1">Receiver Name</label>  
+                            <input type="text" id="sentTo" placeholder="Krishna Khanal"   
+                                class="custom-input focus:ring-2 focus:ring-brand-500/20">  
+                        </div>  
+                    </div>  
+
+                    <div class="bg-indigo-50/50 p-3 rounded-xl border border-indigo-100">  
+                        <div class="flex items-center justify-between mb-2">  
+                            <label class="block text-xs font-bold text-brand-600 uppercase ml-1"><i class="fa-solid fa-envelope mr-1"></i> Send Link via Email</label>  
+                            <span class="text-[10px] text-gray-400 font-medium bg-white px-2 py-0.5 rounded-full border border-gray-200">Optional</span>  
+                        </div>  
+                        <input type="email" id="emailReceiver" placeholder="iamcnr@proton.me"   
+                            class="custom-input focus:ring-2 focus:ring-brand-500/20 border-indigo-200">  
+                        <p class="text-[10px] text-gray-400 mt-1 ml-1">If filled, we will email the download link to this address.</p>  
+                    </div>  
+
+                    <div>  
+                        <label class="block text-xs font-bold text-gray-500 uppercase mb-1.5 ml-1">Attachment(s) <span class="text-red-400">*</span></label>  
+                          
+                        <input type="file" id="file" multiple class="hidden" accept="image/*,application/pdf,video/*,.doc,.docx,.zip,.rar" onchange="updateFileName(this)">  
+                          
+                        <label for="file" class="flex flex-col items-center justify-center w-full h-24 border-2 border-dashed border-gray-300 rounded-xl cursor-pointer hover:border-brand-500 hover:bg-brand-50/50 transition">  
+                            <div class="flex flex-col items-center justify-center pt-2 pb-3">  
+                                <i class="fa-solid fa-folder-open text-xl text-gray-400 mb-1"></i>  
+                                <p id="fileLabel" class="text-sm text-gray-500 font-medium">Click to choose file(s)</p>  
+                            </div>  
+                        </label>  
+                    </div>  
+
+                    <div class="bg-gray-50 rounded-xl p-4 border border-gray-100">  
+                        <div class="flex items-center justify-between">  
+                            <div class="flex flex-col">  
+                                <span class="text-sm font-bold text-gray-700">Password Protection</span>  
+                                <span class="text-xs text-gray-400">Optional security layer</span>  
+                            </div>  
+                            <label class="relative inline-flex items-center cursor-pointer">  
+                                <input type="checkbox" id="passwordToggle" value="" class="sr-only peer" onchange="togglePasswordInput()">  
+                                <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-brand-600"></div>  
+                            </label>  
+                        </div>  
+                          
+                        <div id="passwordInputContainer" class="hidden mt-3 transition-all">  
+                            <input type="password" id="password" placeholder="Create a password"   
+                                class="custom-input">  
+                        </div>  
+                    </div>  
+                    <button id="uploadBtn" class="w-full py-4 mt-2 bg-gradient-to-r from-brand-600 to-indigo-600 hover:from-brand-700 hover:to-indigo-700 text-white font-bold text-lg rounded-xl shadow-lg shadow-brand-500/30 transform transition-all active:scale-[0.98]">  
+                        Upload & Share  
+                    </button>  
+                      
+                    <div id="progressContainer" class="hidden mt-4">  
+                        <div class="flex justify-between text-xs font-bold text-gray-500 mb-1">  
+                            <span id="progressLabel">Uploading...</span>  
+                            <span id="progressText">0%</span>  
+                        </div>  
+                        <div class="w-full bg-gray-200 rounded-full h-2.5 overflow-hidden">  
+                            <div id="progressBar" class="bg-brand-600 h-2.5 rounded-full transition-all duration-75" style="width: 0%"></div>  
+                        </div>  
+                    </div>  
+
+                </div>  
+            </div>  
+        </div>  
+    </div>  
+
+</main>  
+
+<div id="fabContainer" class="fixed bottom-8 left-8 z-40">  
+    <button onclick="confirmAddFile()" class="fab-btn w-14 h-14 rounded-full bg-gradient-to-tr from-brand-600 to-indigo-500 text-white flex items-center justify-center shadow-2xl border-2 border-white/20">  
+        <i class="fa-solid fa-plus text-xl"></i>  
+    </button>  
+</div>  
+
+<footer class="glass-panel border-t border-gray-200 mt-auto relative z-20">  
+    <div class="max-w-4xl mx-auto px-6 py-8">  
+        <div class="flex flex-col md:flex-row justify-between items-center gap-6">  
+              
+            <div class="text-center md:text-left">  
+                <h3 class="font-bold text-lg text-gray-800">ShareWithCNR</h3>  
+                <p class="text-xs text-gray-400 mt-1">&copy; 2025 CNR. All rights reserved.</p>  
+            </div>  
+
+            <div class="flex gap-3">  
+                <a href="https://github.com/yourkrishna5" target="_blank" class="w-9 h-9 rounded-full bg-gray-100 flex items-center justify-center text-gray-600 hover:bg-black hover:text-white transition"><i class="fa-brands fa-github"></i></a>  
+                <a href="https://www.iamcnr.netlify.app" target="_blank" class="w-9 h-9 rounded-full bg-gray-100 flex items-center justify-center text-gray-600 hover:bg-blue-600 hover:text-white transition"><i class="fa-solid fa-globe"></i></a>  
+                <a href="https://instagram.com/beyondcnr" target="_blank" class="w-9 h-9 rounded-full bg-gray-100 flex items-center justify-center text-gray-600 hover:bg-pink-600 hover:text-white transition"><i class="fa-brands fa-instagram"></i></a>  
+                <a href="https://facebook.com/neocnrkm10" target="_blank" class="w-9 h-9 rounded-full bg-gray-100 flex items-center justify-center text-gray-600 hover:bg-blue-700 hover:text-white transition"><i class="fa-brands fa-facebook-f"></i></a>  
+            </div>  
+        </div>  
+    </div>  
+</footer>  
+
+<script type="module">  
+    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';  
+
+    // --- EMAILJS INITIALIZATION FIXED ---  
+    // Moved inside the module to ensure global window object is ready  
+    // and accessible within the module scope.  
+    (function() {  
+        if(window.emailjs) {  
+            window.emailjs.init("LoiC920aeT4syRoup");   
+        } else {  
+            console.error("EmailJS library not loaded");  
+        }  
+    })();  
+
+    const supabaseUrl = 'https://sofxdshwkkwtfxnmlzem.supabase.co';  
+    const supabaseKey = 'sb_publishable_VMNVZXmmep05ihMaYjC9ug_FDxfoPL3';  
+    const supabase = createClient(supabaseUrl, supabaseKey);  
       
-      if(error) return alert("Upload failed.");
+    const cloudName = "du1wbgmmh";  
+    const uploadPreset = "fbpost";   
 
-      const { data: { publicUrl } } = db.storage.from('chat-media').getPublicUrl(path);
-
-      await db.from('messages').insert({
-        user_id: user.id,
-        content: '',
-        media_type: type,
-        media_url: publicUrl
-      });
+    document.getElementById("uploadBtn").addEventListener("click", upload);  
       
-      // Local append for speed
-      appendMsg({ user_id: user.id, profiles: {username}, media_type: type, media_url: publicUrl });
-      scrollBottom();
-    }
+    // --- INITIALIZATION ---  
+    const urlParams = new URLSearchParams(window.location.search);  
+    const refId = urlParams.get('ref');  
 
-    // --- VOICE RECORDER ---
-    function startVoice() {
-      navigator.mediaDevices.getUserMedia({ audio: true }).then(stream => {
-        mediaRecorder = new MediaRecorder(stream);
-        mediaRecorder.start();
-        audioChunks = [];
-        document.getElementById('mic-btn').classList.add('active');
-        mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
-      });
-    }
+    if (refId) {  
+        handleSharedLink(refId);  
+    } else {  
+        fetchFeed();  
+    }  
 
-    function stopVoice() {
-      if(!mediaRecorder) return;
-      mediaRecorder.stop();
-      document.getElementById('mic-btn').classList.remove('active');
-      mediaRecorder.onstop = async () => {
-        const blob = new Blob(audioChunks, { type: 'audio/webm' });
-        const path = `voice/${Date.now()}.webm`;
-        await db.storage.from('chat-media').upload(path, blob);
-        const { data: { publicUrl } } = db.storage.from('chat-media').getPublicUrl(path);
-        await db.from('messages').insert({ user_id: user.id, media_type: 'audio', media_url: publicUrl });
-        appendMsg({ user_id: user.id, profiles: {username}, media_type: 'audio', media_url: publicUrl });
-        scrollBottom();
-      };
-    }
+    // Utility to format bytes  
+    function formatBytes(bytes, decimals = 2) {  
+        if (bytes === 0) return '0 Bytes';  
+        const k = 1024;  
+        const dm = decimals < 0 ? 0 : decimals;  
+        const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];  
+        const i = Math.floor(Math.log(bytes) / Math.log(k));  
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];  
+    }  
 
-    // --- UTILS ---
-    function scrollBottom() {
-      const h = document.getElementById('chat-history');
-      h.scrollTop = h.scrollHeight;
-    }
+    // Toggle Password Input Visibility  
+    window.togglePasswordInput = function() {  
+        const isChecked = document.getElementById('passwordToggle').checked;  
+        const container = document.getElementById('passwordInputContainer');  
+        if(isChecked) {  
+            container.classList.remove('hidden');  
+            document.getElementById('password').focus();  
+        } else {  
+            container.classList.add('hidden');  
+            document.getElementById('password').value = ""; // Clear it  
+        }  
+    }  
 
-    function updateStatus(id, status) {
-      const el = document.querySelector(`#msg-${id} .msg-status`);
-      if(el) el.innerText = status;
-    }
+    // ----------------------------------------------------  
+    // UPDATED SHARE LOGIC (With QR Code)  
+    // ----------------------------------------------------  
+    window.openShareModal = function(uuid) {  
+        const url = `${window.location.origin}${window.location.pathname}?ref=${uuid}`;  
+        const modal = document.getElementById('shareModal');  
+        const input = document.getElementById('shareInput');  
+        const qrContainer = document.getElementById('qrcode');  
+          
+        modal.classList.remove('hidden');  
+        input.value = url;  
+          
+        // Clear previous QR Code  
+        qrContainer.innerHTML = "";  
+          
+        // Generate New QR Code  
+        new QRCode(qrContainer, {  
+            text: url,  
+            width: 150,  
+            height: 150,  
+            colorDark : "#0f172a",  
+            colorLight : "#ffffff",  
+            correctLevel : QRCode.CorrectLevel.H  
+        });  
+    }  
 
-    function escapeHtml(str) {
-      const p = document.createElement('p');
-      p.textContent = str;
-      return p.innerHTML;
-    }
-  </script>
-</body>
+    window.closeShareModal = function() {  
+        document.getElementById('shareModal').classList.add('hidden');  
+    }  
+
+    window.copyFromModal = function() {  
+        const input = document.getElementById('shareInput');  
+        input.select();  
+        input.setSelectionRange(0, 99999); // For mobile devices  
+        navigator.clipboard.writeText(input.value).then(() => {  
+            showToast("Link copied!");  
+        });  
+    }  
+
+    document.getElementById('shareModal').addEventListener('click', function(e) {  
+        if (e.target === this) closeShareModal();  
+    });  
+
+
+    function showToast(message) {  
+        const x = document.getElementById("toast");  
+        x.innerText = message;  
+        x.className = "show";  
+        setTimeout(function(){ x.className = x.className.replace("show", ""); }, 3000);  
+    }  
+
+    // ----- Shared Link Logic (Auto-Open) -----  
+    async function handleSharedLink(refId) {  
+        const loader = document.getElementById("loader");  
+        const feed = document.getElementById("feed");  
+        loader.style.display = "block";  
+          
+        document.getElementById('searchContainer').classList.add('hidden');  
+        document.getElementById('feedTitle').innerText = "Shared File";  
+        document.getElementById('feedSubtitle').innerText = "Someone shared this secure file with you.";  
+        document.getElementById('showAllBtn').classList.remove('hidden');  
+
+        const { data, error } = await supabase  
+            .from('posts')  
+            .select('*')  
+            .eq('shareable_url', refId)  
+            .single();  
+
+        loader.style.display = "none";  
+
+        if (error || !data) {  
+            feed.innerHTML = `<div class="bg-white/10 text-white p-4 rounded-xl text-center backdrop-blur-md">  
+                <i class="fa-solid fa-triangle-exclamation text-yellow-400 text-2xl mb-2"></i><br>  
+                Link is invalid or expired.<br>  
+                <button onclick="window.location.href=window.location.pathname" class="mt-2 underline text-brand-400">Go to Home</button>  
+            </div>`;  
+            return;  
+        }  
+
+        feed.innerHTML = "";  
+        renderPostItem(data, feed);  
+
+        setTimeout(() => {  
+            const isProtected = data.password && data.password !== "null" && data.password !== "";  
+            if(isProtected) {  
+                openFile(data.password, data.file_url, data.filename);  
+            } else {  
+                openFile(null, data.file_url, data.filename);  
+            }  
+        }, 300);  
+    }  
+
+    // ----- Standard Feed -----  
+    async function fetchFeed() {  
+        const loader = document.getElementById("loader");  
+        const feed = document.getElementById("feed");  
+          
+        if(feed.children.length === 0) loader.style.display = "block";  
+
+        const { data, error } = await supabase.from('posts')  
+            .select('*')  
+            .order('views', { ascending:false })  
+            .order('upload_time', { ascending:false });  
+          
+        loader.style.display = "none";  
+          
+        if (error) {   
+            feed.innerHTML = `<div class="bg-white/10 text-white p-4 rounded-xl text-center backdrop-blur-md">Failed to load feed.</div>`;  
+            return;   
+        }  
+
+        feed.innerHTML = "";  
+
+        if (data.length === 0) {  
+            feed.innerHTML = `  
+                <div class="glass-panel p-10 rounded-2xl text-center">  
+                    <i class="fa-solid fa-box-open text-4xl text-gray-300 mb-4"></i>  
+                    <p class="text-gray-500 font-medium">No files available yet.</p>  
+                    <button onclick="confirmAddFile()" class="mt-4 text-brand-600 font-bold text-sm hover:underline">Upload First File</button>  
+                </div>`;  
+            return;  
+        }  
+
+        data.forEach(post => {  
+            renderPostItem(post, feed);  
+        });  
+    }  
+
+    // ----- Render a Single Card -----  
+    function renderPostItem(post, container) {  
+        const age = new Date() - new Date(post.upload_time);  
+        const expired = age > 48*60*60*1000;  
+
+        const dateObj = new Date(post.upload_time);  
+        const dateStr = dateObj.toLocaleDateString(undefined, { month:'short', day:'numeric' });  
+          
+        let iconClass = "fa-file-lines text-gray-500";  
+        let bgClass = "bg-gray-100";  
+        const fn = (post.original_name || "").toLowerCase();  
+          
+        if(fn.includes('pdf')) { iconClass = "fa-file-pdf text-red-500"; bgClass = "bg-red-50"; }  
+        else if(fn.match(/\.(jpg|jpeg|png|webp)$/)) { iconClass = "fa-file-image text-purple-500"; bgClass = "bg-purple-50"; }  
+        else if(fn.match(/\.(doc|docx)$/)) { iconClass = "fa-file-word text-blue-500"; bgClass = "bg-blue-50"; }  
+        else if(fn.match(/\.(zip|rar|7z)$/)) { iconClass = "fa-file-zipper text-orange-500"; bgClass = "bg-orange-50"; }  
+
+        const isProtected = post.password && post.password !== "null" && post.password !== "";  
+        const hasDesc = post.description && post.description.trim() !== "";  
+        const hasSender = post.sent_by && post.sent_by.trim() !== "";  
+        const hasReceiver = post.sent_to && post.sent_to.trim() !== "";  
+
+        const div = document.createElement("div");  
+        div.className = `feed-item glass-panel p-4 sm:p-5 rounded-2xl transition-all duration-300 ${expired ? 'opacity-60 grayscale' : 'hover:scale-[1.01] hover:shadow-xl'}`;  
+
+        div.innerHTML = `  
+            <div class="flex items-start gap-3 sm:gap-4">  
+                <div class="w-12 h-12 rounded-xl ${bgClass} flex items-center justify-center shrink-0 shadow-sm mt-1">  
+                    <i class="fa-regular ${iconClass} text-2xl"></i>  
+                </div>  
+                  
+                <div class="flex-grow min-w-0 pr-1">  
+                    <div class="flex flex-col sm:flex-row sm:justify-between sm:items-start">  
+                        <h3 class="font-bold text-gray-800 text-base sm:text-lg line-clamp-2 break-words leading-tight">${post.filename}</h3>  
+                        ${!expired ? `<span class="inline-block mt-1 sm:mt-0 w-fit shrink-0 text-[10px] font-bold bg-green-100 text-green-700 px-2 py-0.5 rounded-full border border-green-200">ACTIVE</span>` : ''}  
+                    </div>  
+                      
+                    <p class="orig-name text-[10px] text-gray-400 font-bold truncate mt-1 italic opacity-80">  
+                        <i class="fa-solid fa-paperclip mr-1"></i> ${post.original_name || 'unknown_file'}  
+                    </p>  
+
+                    ${hasDesc ? `<p class="text-xs text-gray-600 mt-2 line-clamp-2 leading-relaxed bg-gray-50 p-2 rounded-lg border border-gray-100">${post.description}</p>` : ''}  
+
+                    <div class="flex flex-wrap items-center gap-2 sm:gap-3 mt-3 text-xs text-gray-500 font-medium">  
+                        <span>${dateStr}</span>  
+                        <span class="w-1 h-1 bg-gray-300 rounded-full"></span>  
+                        <span class="text-brand-600 font-bold">${post.file_size || '0 KB'}</span>  
+                        <span class="w-1 h-1 bg-gray-300 rounded-full"></span>  
+                        <span>${post.views} views</span>  
+                        ${isProtected ? '<span class="ml-1 text-[10px] bg-gray-200 px-1.5 rounded text-gray-600"><i class="fa-solid fa-lock text-[8px]"></i></span>' : ''}  
+                        ${expired ? `<span class="w-1 h-1 bg-gray-300 rounded-full"></span><span class="text-red-500">Expired</span>` : ''}  
+                    </div>  
+
+                    ${(hasSender || hasReceiver) ? `  
+                        <div class="mt-3 pt-2 border-t border-gray-100 flex items-center text-xs text-gray-500">  
+                            ${hasSender ? `<span class="mr-1">From: <b class="text-brand-600">${post.sent_by}</b></span>` : ''}  
+                            ${(hasSender && hasReceiver) ? '<i class="fa-solid fa-arrow-right-long mx-2 text-gray-300"></i>' : ''}  
+                            ${hasReceiver ? `<span>To: <b class="text-brand-600">${post.sent_to}</b></span>` : ''}  
+                        </div>  
+                    ` : ''}  
+                </div>  
+
+                <div class="shrink-0 flex flex-col gap-2 pt-1">  
+                    ${expired   
+                        ? `<button disabled class="w-10 h-10 rounded-full bg-gray-100 text-gray-400 flex items-center justify-center cursor-not-allowed"><i class="fa-solid fa-ban"></i></button>`  
+                        : `  
+                        <div class="flex flex-col gap-2">  
+                            <button onclick="openShareModal('${post.shareable_url || ''}')" class="w-10 h-10 rounded-full bg-white text-gray-500 hover:text-brand-600 hover:shadow-md flex items-center justify-center transition border border-gray-100">  
+                                <i class="fa-solid fa-share-nodes"></i>  
+                            </button>  
+                            <button onclick="openFile('${post.password || ''}','${post.file_url}', '${(post.original_name || post.filename).replace(/'/g, "\\'")}')" class="w-10 h-10 rounded-full bg-brand-50 text-brand-600 hover:bg-brand-600 hover:text-white flex items-center justify-center transition-colors shadow-sm border border-brand-100">  
+                                <i class="fa-solid ${isProtected ? 'fa-lock' : 'fa-download'}"></i>  
+                            </button>  
+                        </div>  
+                        `  
+                    }  
+                </div>  
+            </div>  
+        `;  
+        container.appendChild(div);  
+    }  
+
+    // ----- View Toggle Logic -----  
+    window.toggleView = function(viewName) {  
+        const feedSection = document.getElementById('feedSection');  
+        const uploadSection = document.getElementById('uploadSection');  
+        const fab = document.getElementById('fabContainer');  
+          
+        window.scrollTo({ top: 0, behavior: 'smooth' });  
+
+        if (viewName === 'upload') {  
+            fab.style.display = 'none';  
+            feedSection.classList.remove('active-page');  
+            feedSection.classList.add('hidden-page');  
+            uploadSection.classList.remove('hidden-page');  
+            setTimeout(() => uploadSection.classList.add('active-page'), 10);  
+        } else {  
+            window.history.replaceState({}, document.title, window.location.pathname);  
+            fab.style.display = 'block';  
+            uploadSection.classList.remove('active-page');  
+            uploadSection.classList.add('hidden-page');  
+            feedSection.classList.remove('hidden-page');  
+            setTimeout(() => feedSection.classList.add('active-page'), 10);  
+              
+            document.getElementById('searchContainer').classList.remove('hidden');  
+            document.getElementById('feedTitle').innerText = "Available Files";  
+            document.getElementById('feedSubtitle').innerText = "Secure any materials. Shared temporarily.";  
+            document.getElementById('showAllBtn').classList.add('hidden');  
+              
+            fetchFeed();   
+        }  
+    }  
+
+    // ----- Search/Filter Logic -----  
+    window.filterFiles = function() {  
+        const input = document.getElementById('searchInput');  
+        const filter = input.value.toLowerCase();  
+        const feed = document.getElementById('feed');  
+        const items = feed.getElementsByClassName('feed-item');  
+
+        for (let i = 0; i < items.length; i++) {  
+            // Search within the entire text content of the card (covers desc, sender, receiver)  
+            const textContent = items[i].innerText || items[i].textContent;  
+            if (textContent.toLowerCase().indexOf(filter) > -1) {  
+                items[i].style.display = "";  
+            } else {  
+                items[i].style.display = "none";  
+            }  
+        }  
+    }  
+
+    // ----- Confirm Add File -----  
+    window.confirmAddFile = function() {  
+        document.getElementById('passwordToggle').checked = false;  
+        window.togglePasswordInput();  
+          
+        if(confirm("Do you want to add a new file?")) {  
+            toggleView('upload');  
+        }  
+    }  
+
+    window.updateFileName = function(input) {  
+        const label = document.getElementById('fileLabel');  
+        if(input.files && input.files.length > 0) {  
+            if(input.files.length === 1) {  
+                label.innerHTML = `<span class="text-brand-600 font-bold">${input.files[0].name}</span>`;  
+            } else {  
+                label.innerHTML = `<span class="text-brand-600 font-bold">${input.files.length} files selected (will be zipped)</span>`;  
+            }  
+        }  
+    }  
+
+    // ----- Upload Logic (Updated for ZIP & Email) -----  
+    async function upload() {  
+        const btn = document.getElementById("uploadBtn");  
+        const originalText = btn.innerHTML;  
+          
+        const fileInput = document.getElementById("file");  
+        const files = fileInput.files;  
+          
+        const filename = document.getElementById("filename").value.trim();  
+        const description = document.getElementById("description").value.trim();  
+        const sentBy = document.getElementById("sentBy").value.trim();  
+        const sentTo = document.getElementById("sentTo").value.trim();  
+        const emailReceiver = document.getElementById("emailReceiver").value.trim();  
+          
+        const usePassword = document.getElementById('passwordToggle').checked;  
+        let password = null;  
+        if(usePassword) {  
+            password = document.getElementById("password").value.trim();  
+            if(!password) {  
+                alert("⚠️ Please enter a password or disable protection.");  
+                return;  
+            }  
+        }  
+          
+        if (files.length === 0 || !filename) {  
+            alert("⚠️ Please select files and enter a title.");  
+            return;  
+        }  
+
+        const progressContainer = document.getElementById("progressContainer");  
+        const progressBar = document.getElementById("progressBar");  
+        const progressText = document.getElementById("progressText");  
+        const progressLabel = document.getElementById("progressLabel");  
+
+        // Disable UI  
+        btn.disabled = true;  
+        btn.classList.add('opacity-70', 'cursor-not-allowed');  
+        progressContainer.classList.remove("hidden");  
+        progressBar.style.width = "0%";  
+        progressText.innerText = "0%";  
+
+        try {  
+            // --- STEP 1: PREPARE FILE (ZIP IF MULTIPLE) ---  
+            let fileToUpload = null;  
+            let originalName = "";  
+              
+            if (files.length > 1) {  
+                btn.innerHTML = '<i class="fa-solid fa-file-zipper fa-spin"></i> Zipping...';  
+                progressLabel.innerText = "Compressing files...";  
+                  
+                const zip = new JSZip();  
+                // Add all files to the zip  
+                Array.from(files).forEach(file => {  
+                    zip.file(file.name, file);  
+                });  
+                  
+                // Generate Zip Blob  
+                fileToUpload = await zip.generateAsync({type:"blob"});  
+                originalName = "bundle_" + Date.now() + ".zip"; // Custom name for the bundle  
+            } else {  
+                fileToUpload = files[0];  
+                originalName = files[0].name;  
+            }  
+
+            const fileSizeFormatted = formatBytes(fileToUpload.size);  
+
+            // --- STEP 2: UPLOAD TO CLOUDINARY ---  
+            btn.innerHTML = '<i class="fa-solid fa-cloud-arrow-up fa-spin"></i> Uploading...';  
+            progressLabel.innerText = "Uploading to Cloud...";  
+
+            const formData = new FormData();  
+            formData.append("file", fileToUpload, originalName); // Pass Blob/File and Name  
+            formData.append("upload_preset", uploadPreset);  
+            formData.append("resource_type", "auto");   
+
+            const xhr = new XMLHttpRequest();  
+              
+            xhr.upload.addEventListener("progress", (event) => {  
+                if (event.lengthComputable) {  
+                    const percent = Math.round((event.loaded / event.total) * 100);  
+                    progressBar.style.width = percent + "%";  
+                    progressText.innerText = percent + "%";  
+                }  
+            });  
+
+            xhr.onload = async () => {  
+                if (xhr.status === 200) {  
+                    try {  
+                        const cloudData = JSON.parse(xhr.responseText);  
+                        const shareUrlUUID = crypto.randomUUID();  
+
+                        // --- STEP 3: SAVE TO SUPABASE ---  
+                        const { error } = await supabase.from('posts').insert([{  
+                            title: filename + (password ? "_" + password : ""),  
+                            filename,  
+                            description,  
+                            sent_by: sentBy,  
+                            sent_to: sentTo,  
+                            password: password,   
+                            file_url: cloudData.secure_url,  
+                            views: 0,  
+                            original_name: originalName,   
+                            file_size: fileSizeFormatted,  
+                            shareable_url: shareUrlUUID  
+                        }]);  
+
+                        if (error) throw error;  
+
+                        // --- STEP 4: SEND EMAIL (IF PROVIDED) ---  
+                        let emailSent = false;  
+                        if (emailReceiver) {  
+                            btn.innerHTML = '<i class="fa-solid fa-paper-plane fa-spin"></i> Sending Email...';  
+                            progressLabel.innerText = "Sending Email...";  
+                              
+                            const fullLink = `${window.location.origin}${window.location.pathname}?ref=${shareUrlUUID}`;  
+                              
+                            // Explicitly using window.emailjs to ensure scope correctness  
+                            if(window.emailjs) {  
+                                try {  
+                                    await window.emailjs.send("service_teqtpsl", "template_92vutzu", {  
+                                        to_name: sentTo || "User",  
+                                        from_name: sentBy || "ShareWithCNR",  
+                                        message: description || "hi",  
+                                        file_link: fullLink,  
+                                        to_email: emailReceiver,  
+                                    });  
+                                    emailSent = true;  
+                                } catch(e) {  
+                                    console.error("EmailJS failed:", e);  
+                                    alert("File uploaded, but email failed to send.");  
+                                }  
+                            }  
+                        }  
+
+                        alert("Upload successful! 🎉" + (emailSent ? " Email sent." : ""));  
+                          
+                        // Reset Form  
+                        document.getElementById("filename").value = "";  
+                        document.getElementById("description").value = "";  
+                        document.getElementById("sentBy").value = "";  
+                        document.getElementById("sentTo").value = "";  
+                        document.getElementById("emailReceiver").value = "";  
+                        document.getElementById("file").value = "";  
+                        document.getElementById("password").value = "";  
+                        document.getElementById("fileLabel").innerText = "Click to choose file(s)";  
+                          
+                        toggleView('feed');  
+
+                    } catch (err) {  
+                        console.error(err);  
+                        alert("Error: " + err.message);  
+                    }  
+                } else {  
+                    alert("Upload Failed. Cloudinary Error.");  
+                }  
+                resetUploadUI();  
+            };  
+
+            xhr.onerror = () => {  
+                alert("Network Error during upload.");  
+                resetUploadUI();  
+            };  
+
+            xhr.open("POST", `https://api.cloudinary.com/v1_1/${cloudName}/auto/upload`);  
+            xhr.send(formData);  
+
+        } catch (err) {  
+            console.error("Zipping error:", err);  
+            alert("Error preparing files: " + err.message);  
+            resetUploadUI();  
+        }  
+
+        function resetUploadUI() {  
+            btn.innerHTML = originalText;  
+            btn.disabled = false;  
+            btn.classList.remove('opacity-70', 'cursor-not-allowed');  
+            progressContainer.classList.add("hidden");  
+        }  
+    }  
+
+    // ----- Modal & Action Logic -----  
+    window.openFile = async function(passwordInput, fileUrl, fileName) {  
+          
+        if (passwordInput && passwordInput !== 'null' && passwordInput !== '') {  
+            const input = prompt("🔐 Enter file password:");  
+            if (input !== passwordInput) {  
+                alert("❌ Wrong password");  
+                return;  
+            }  
+        }  
+
+        try {  
+            const { data: posts } = await supabase.from('posts').select('views').eq('file_url', fileUrl).single();  
+            if(posts) {  
+                await supabase.from('posts').update({ views: (posts.views || 0) + 1 }).eq('file_url', fileUrl);  
+            }  
+              
+            const modal = document.getElementById('actionModal');  
+            const nameEl = document.getElementById('modalFileName');  
+            const downloadBtn = document.getElementById('downloadLink');  
+
+            modal.classList.remove('hidden');  
+            nameEl.textContent = fileName;  
+              
+            downloadBtn.href = fileUrl;  
+            downloadBtn.download = fileName;   
+
+            if(window.resetStars) {  
+                currentRating = 0;  
+                resetStars();  
+                document.getElementById('ratingMessage').classList.add('opacity-0');  
+            }  
+
+        } catch (err) {  
+            console.error(err);  
+            window.open(fileUrl, '_blank');  
+        }  
+    };  
+
+    window.closeModal = function() {  
+        document.getElementById('actionModal').classList.add('hidden');  
+    }  
+
+    document.getElementById('actionModal').addEventListener('click', function(e) {  
+        if (e.target === this) closeModal();  
+    });  
+
+    // -------------------------  
+    // STAR RATING LOGIC  
+    // -------------------------  
+    let currentRating = 0;  
+
+    window.highlightStars = function(count) {  
+        const buttons = document.querySelectorAll('.star-btn');  
+        buttons.forEach((btn, index) => {  
+            const icon = btn.querySelector('i');  
+            if (index < count) {  
+                icon.classList.remove('fa-regular', 'text-gray-300');  
+                icon.classList.add('fa-solid', 'text-yellow-400');  
+            } else {  
+                icon.classList.remove('fa-solid', 'text-yellow-400');  
+                icon.classList.add('fa-regular', 'text-gray-300');  
+            }  
+        });  
+    }  
+
+    window.resetStars = function() {  
+        highlightStars(currentRating);  
+    }  
+
+    window.submitRating = function(rating) {  
+        currentRating = rating;  
+        highlightStars(rating);  
+        const msg = document.getElementById('ratingMessage');  
+        msg.innerText = `You rated us ${rating} stars!`;  
+        msg.classList.remove('opacity-0');  
+        setTimeout(() => { msg.classList.add('opacity-0'); }, 3000);  
+    }  
+
+</script>
+
+</body>  
 </html>
